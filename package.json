@@ -5,7 +5,6 @@
     "client"
   ],
   "scripts": {
-    "install": "npm install --workspaces",
     "dev": "npm --workspace client run dev",
     "build": "npm --workspace client run build",
     "start": "npm --workspace client run preview"
