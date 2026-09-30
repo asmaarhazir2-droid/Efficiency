@@ -1439,10 +1439,17 @@
           return;
         }
 
-        const dropdownSnapshot = await db.collection('dropdown_options').get();
+        const isSuperAdmin = currentUser.role === 'superadmin';
+        const dropdownQuery = isSuperAdmin
+          ? db.collection('dropdown_options')
+          : db.collection('dropdown_options').where('user_id', '==', currentUser.id);
+        const dropdownSnapshot = await dropdownQuery.get();
         appDropdowns = dropdownSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
 
-        const entriesSnapshot = await db.collection('entries').get();
+        const entriesQuery = isSuperAdmin
+          ? db.collection('entries')
+          : db.collection('entries').where('user_id', '==', currentUser.id);
+        const entriesSnapshot = await entriesQuery.get();
         appEntries = entriesSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
 
         const gammesSnapshot = await db.collection('gammes').where('user_id', '==', currentUser.id).get();
