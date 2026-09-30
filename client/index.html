@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Efficiency Tracking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+      :root {
+        color-scheme: light;
+        --leoni-blue-light: #00B2FF;
+        --leoni-blue-dark: #002857;
+        --leoni-orange: #FF7514;
+        --surface: #ffffff;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(0, 178, 255, 0.2), transparent 35%),
+          radial-gradient(circle at 82% 16%, rgba(255, 117, 20, 0.2), transparent 30%),
+          linear-gradient(160deg, #08284e 0%, #0b2f5d 45%, #0f3768 100%);
+        color: var(--leoni-blue-dark);
+      }
+
+      .shell { max-width: none; width: 100%; margin: 0 auto; padding: 22px; }
+      .card {
+        background: var(--surface);
+        border: 1px solid rgba(0, 40, 87, 0.06);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 14px 30px rgba(0, 40, 87, 0.1);
+        margin-bottom: 16px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr 120px 1fr;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .brand {
+        font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .brand-logo {
+        height: 68px;
+        width: auto;
+        display: block;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
+      }
+
+      .brand-opes {
+        justify-self: start;
+        color: var(--leoni-blue-dark);
+      }
+
+      .brand-leoni {
+        justify-self: end;
+        color: var(--leoni-blue-dark);
+      }
+
+      .brand-leoni .brand-logo {
+        height: 62px;
+        filter: brightness(0) invert(1);
+      }
+
+      .brand-opes .brand-logo {
+        height: 74px;
+      }
+
+      .topbar-center {
+        min-height: 78px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .robot-wrap {
+        width: 76px;
+        height: 76px;
+        border-radius: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.45);
+        background: linear-gradient(180deg, #d6ecff, #9ac3e6);
+        display: grid;
+        place-items: center;
+        color: #0a3a6a;
+        animation: robotFloat 2.2s ease-in-out infinite;
+        box-shadow: 0 12px 20px rgba(6, 26, 52, 0.25);
+      }
+
+      .robot-wrap i {
+        font-size: 2rem;
+      }
+
+      .welcome-bubble {
+        background: #f7f8fa;
+        color: #103c70;
+        border-radius: 16px;
+        border: 1px solid rgba(16, 60, 112, 0.15);
+        padding: 10px 16px;
+        font-weight: 700;
+        white-space: nowrap;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+      }
+
+      .welcome-name {
+        text-transform: lowercase;
+      }
+
+      .welcome-bubble i {
+        color: #ff7a1a;
+      }
+
+      @keyframes robotFloat {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+        100% { transform: translateY(0); }
+      }
+
+      .auth-strip {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 16px;
+      }
+
+      .welcome-line {
+        color: #e8f1ff;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        margin: 4px 0 14px;
+      }
+
+      #statusBox {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #loginView {
+        max-width: 560px;
+        margin: 0 auto;
+        border-radius: 18px;
+        padding: 16px 20px 18px;
+        background: linear-gradient(180deg, #f8f9fb, #f4f7fc);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 18px 36px rgba(4, 20, 41, 0.28);
+      }
+
+      #loginView::before {
+        content: "";
+        position: absolute;
+        left: -30px;
+        right: -30px;
+        bottom: -30px;
+        height: 70%;
+        background: linear-gradient(to top, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72)), url("../Images/image 5 (1).png") center bottom / cover no-repeat;
+        pointer-events: none;
+      }
+
+      .login-head,
+      #loginForm,
+      .login-foot {
+        position: relative;
+        z-index: 1;
+      }
+
+      .login-head {
+        margin: 0 0 10px;
+        font-size: 2rem;
+        text-align: left;
+        color: #103c70;
+        font-weight: 800;
+      }
+
+      #loginForm label {
+        color: #103c70;
+        font-weight: 700;
+      }
+
+      .topbar button, .card button, .card input, .card select { font: inherit; }
+      .topbar button, .card button {
+        background: linear-gradient(90deg, var(--leoni-blue-dark), var(--leoni-blue-light));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      }
+
+      .topbar button:hover, .card button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 18px rgba(7, 42, 82, 0.22);
+      }
+
+      .topbar button:active, .card button:active {
+        transform: translateY(0);
+      }
+
+      input, select {
+        display: block;
+        width: 100%;
+        margin: 8px 0 12px;
+        padding: 11px 12px;
+        border-radius: 8px;
+        border: 2px solid #ff7a1a;
+        background: #ffffff;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus,
+      select:focus,
+      .entry-input:focus,
+      .entry-select:focus,
+      .app-select:focus {
+        outline: none;
+        border-color: #21b4f2;
+        box-shadow: 0 0 0 3px rgba(33, 180, 242, 0.2);
+      }
+
+      #loginForm button[type="submit"] {
+        width: 100%;
+        margin-top: 4px;
+        border-radius: 9px;
+        font-size: 1.05rem;
+        padding: 11px;
+        background: linear-gradient(90deg, #1899d3, #21b4f2);
+      }
+
+      #loginForm button[type="submit"] i {
+        margin-right: 8px;
+      }
+      .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .pill {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0, 178, 255, 0.16);
+        color: var(--leoni-blue-dark);
+        border: 1px solid rgba(0, 40, 87, 0.18);
+        margin-right: 8px;
+      }
+      .muted { color: #325072; font-size: 0.95rem; }
+      .hidden { display: none; }
+      .error { color: #c93f00; margin: 8px 0; }
+      .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+
+      .login-foot {
+        margin-top: 8px;
+        text-align: center;
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      .app-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 22px;
+        align-items: start;
+        transition: grid-template-columns 0.2s ease;
+      }
+
+      .app-layout.nav-collapsed {
+        grid-template-columns: 78px minmax(0, 1fr);
+      }
+
+      #appView {
+        margin-top: 14px;
+      }
+
+      .workspace-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(90deg, #103c70 0%, #0f457f 68%, #1e5b97 100%);
+        color: #ffffff;
+        border-radius: 0;
+        padding: 14px 16px;
+        box-shadow: 0 10px 24px rgba(0, 40, 87, 0.25);
+        margin: 0 -22px 18px;
+      }
+
+      .workspace-title {
+        margin: 0;
+        font-size: 1.7rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .workspace-date {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ff8a28;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 1.1rem;
+        font-weight: 800;
+        backdrop-filter: blur(3px);
+      }
+
+      .workspace-area {
+        background:
+          linear-gradient(180deg, #eef2f7 0%, #edf2f9 100%);
+        margin: 0 -22px -22px;
+        padding: 20px 10px 28px;
+        min-height: 60vh;
+      }
+
+      .app-layout.nav-collapsed main {
+        width: 100%;
+      }
+
+      .app-layout.nav-collapsed .workspace-panel,
+      .app-layout.nav-collapsed .workspace-panel .chart-box,
+      .app-layout.nav-collapsed .workspace-panel .table-wrap {
+        width: 100%;
+      }
+
+      .side-menu {
+        background: #ffffff;
+        color: #0f3567;
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 14px 30px rgba(15, 53, 103, 0.12);
+        height: fit-content;
+        position: sticky;
+        top: 16px;
+        transition: width 0.2s ease, padding 0.2s ease, transform 0.2s ease;
+        overflow: hidden;
+      }
+
+      .side-menu-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .side-menu h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .nav-toggle {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        border-radius: 999px;
+        border: 1px solid #d7deea;
+        background: #f5f8fc;
+        color: #0f3567;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.2s ease;
+      }
+
+      .nav-toggle {
+        display: none;
+      }
+
+      .nav-toggle:hover {
+        transform: translateY(-1px);
+        background: #eaf0f8;
+      }
+
+      .menu-separator {
+        height: 1px;
+        background: #d7deea;
+        margin: 14px 0;
+      }
+
+      .menu-btn {
+        display: block;
+        width: 100%;
+        border: none;
+        background: #edf1f7;
+        color: #0f3567;
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        text-align: left;
+        cursor: pointer;
+        font-weight: 700;
+        transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      .menu-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(15, 53, 103, 0.13);
+      }
+
+      .menu-btn.active {
+        background: #0d3260;
+        color: #ffffff;
+        border-left: 4px solid #ff7a1a;
+      }
+
+      .menu-btn.action-warning {
+        background: #fff3de;
+        color: #ff6a00;
+      }
+
+      .menu-btn.action-danger {
+        background: #ffe9ef;
+        color: #d6324e;
+      }
+
+      .menu-btn i {
+        margin-right: 9px;
+      }
+
+      .menu-text {
+        display: inline;
+      }
+
+      .side-menu.collapsed {
+        width: 78px;
+        padding: 18px 10px;
+      }
+
+      .side-menu.collapsed .side-menu-header {
+        justify-content: center;
+      }
+
+      .side-menu.collapsed h3,
+      .side-menu.collapsed .menu-separator,
+      .side-menu.collapsed .menu-text {
+        display: none;
+      }
+
+      .side-menu.collapsed .menu-btn {
+        width: 52px;
+        padding: 12px 0;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .side-menu.collapsed .menu-btn i {
+        margin-right: 0;
+      }
+
+      .side-menu.collapsed .nav-toggle i {
+        transform: rotate(180deg);
+      }
+
+      .workspace-panel {
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
+        animation: panelIn 0.35s ease;
+      }
+
+      @keyframes panelIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .workspace-panel h2 {
+        margin: 0;
+        color: #0f3567;
+      }
+
+      .panel-rule {
+        border: none;
+        border-top: 2px solid #dbe2ee;
+        margin: 12px 0 16px;
+      }
+
+      .field-label {
+        color: #0f3567;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .app-select {
+        border: 2px solid #d4dbe8;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 1.05rem;
+        color: #0f3567;
+      }
+
+      .entry-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+
+      .entry-field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .entry-input,
+      .entry-select {
+        border: 2px solid #d4dbe8;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 1rem;
+        color: #0f3567;
+        background: #ffffff;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .entry-help {
+        color: #4b6281;
+        font-size: 0.9rem;
+      }
+
+      .result-box {
+        background: #f6f9ff;
+        border: 1px solid #d7e0ef;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: inset 0 1px 0 #ffffff;
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      .status-good {
+        color: #0c7a43;
+        background: #e7f9ef;
+        border: 1px solid #bdebd1;
+      }
+
+      .status-bad {
+        color: #c02a2a;
+        background: #ffeaea;
+        border: 1px solid #ffcaca;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      .dashboard-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 290px;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .dashboard-main-column,
+      .dashboard-ranking-column {
+        min-width: 0;
+      }
+
+      .dashboard-ranking-column {
+        position: sticky;
+        top: 16px;
+        min-width: 280px;
+      }
+
+      .dashboard-ranking-column .nav-ranking-panel {
+        margin-top: 0;
+      }
+
+      .dashboard-ranking-column .nav-ranking-list {
+        max-height: calc(100vh - 230px);
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .dashboard-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .dashboard-summary-card {
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f8fd 100%);
+        border: 1px solid #dce3ef;
+        box-shadow: 0 10px 24px rgba(15, 53, 103, 0.08);
+      }
+
+      .dashboard-summary-label {
+        margin: 0 0 6px;
+        color: #4b6281;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .dashboard-summary-value {
+        margin: 0;
+        color: #0f3567;
+        font-size: 1.7rem;
+        font-weight: 900;
+        line-height: 1.05;
+      }
+
+      .dashboard-summary-note {
+        margin: 8px 0 0;
+        color: #6a7f99;
+        font-size: 0.86rem;
+      }
+
+      .chart-box {
+        background: #ffffff;
+        border: 1px solid #e3e9f3;
+        border-radius: 14px;
+        padding: 12px;
+        margin: 10px 0 14px;
+      }
+
+      .ranking-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-bottom: 12px;
+      }
+
+      .ranking-card {
+        border-radius: 16px;
+        padding: 16px;
+        border: 1px solid #dce3ef;
+        background: linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%);
+        box-shadow: 0 10px 24px rgba(15, 53, 103, 0.08);
+      }
+
+      .ranking-card.top-1 {
+        border-color: rgba(255, 193, 7, 0.35);
+        box-shadow: 0 12px 26px rgba(255, 193, 7, 0.16);
+      }
+
+      .ranking-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: #0f3567;
+        background: #eaf0f8;
+      }
+
+      .ranking-title {
+        margin: 0 0 6px;
+        color: #0f3567;
+        font-size: 1.05rem;
+      }
+
+      .ranking-meta {
+        margin: 0;
+        color: #4b6281;
+        font-size: 0.92rem;
+      }
+
+      .ranking-value {
+        margin-top: 10px;
+        font-size: 1.35rem;
+        font-weight: 800;
+      }
+
+      .ranking-good {
+        color: #0c7a43;
+      }
+
+      .ranking-bad {
+        color: #c02a2a;
+      }
+
+      .nav-ranking-panel {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #d7deea;
+      }
+
+      .nav-ranking-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+
+      .nav-ranking-header h4 {
+        margin: 0;
+        font-size: 0.98rem;
+        color: #0f3567;
+      }
+
+      .ranking-mode-toggle {
+        display: inline-flex;
+        gap: 6px;
+        padding: 3px;
+        border-radius: 999px;
+        background: #eef3fb;
+        border: 1px solid #d7e0ef;
+      }
+
+      .ranking-mode-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 5px 8px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #4b6281;
+        background: transparent;
+      }
+
+      .ranking-mode-btn.active {
+        background: #0d3260;
+        color: #ffffff;
+      }
+
+      .nav-ranking-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav-ranking-item {
+        border-radius: 14px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+        border: 1px solid #dbe5f2;
+        box-shadow: 0 8px 18px rgba(15, 53, 103, 0.08);
+      }
+
+      .nav-ranking-item.top-1 {
+        border-color: rgba(255, 193, 7, 0.45);
+        background: linear-gradient(180deg, #fff8e4 0%, #fff2c4 100%);
+      }
+
+      .nav-ranking-item.top-2 {
+        border-color: rgba(182, 190, 204, 0.8);
+        background: linear-gradient(180deg, #f8f9fb 0%, #eef1f6 100%);
+      }
+
+      .nav-ranking-item.top-3 {
+        border-color: rgba(205, 127, 50, 0.45);
+        background: linear-gradient(180deg, #fff3e8 0%, #ffe7d2 100%);
+      }
+
+      .nav-ranking-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+        color: #0f3567;
+        margin-bottom: 4px;
+      }
+
+      .nav-ranking-medal {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        color: #ffffff;
+        font-size: 0.9rem;
+        background: #0d3260;
+      }
+
+      .nav-ranking-item.top-1 .nav-ranking-medal {
+        background: #f0b400;
+      }
+
+      .nav-ranking-item.top-2 .nav-ranking-medal {
+        background: #8f9cb1;
+      }
+
+      .nav-ranking-item.top-3 .nav-ranking-medal {
+        background: #c67c3d;
+      }
+
+      .nav-ranking-meta {
+        margin: 0;
+        color: #506582;
+        font-size: 0.86rem;
+      }
+
+      .dashboard-ranking-empty {
+        color: #6a7f99;
+        font-size: 0.92rem;
+        margin: 0;
+      }
+
+      .chart-canvas {
+        width: 100%;
+        max-height: 320px;
+      }
+
+      .simple-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+
+      .simple-table th,
+      .simple-table td {
+        border-bottom: 1px solid #e3e8f1;
+        padding: 8px 10px;
+        text-align: left;
+      }
+
+      .simple-table th {
+        color: #0f3567;
+        background: #f7f9fd;
+      }
+
+      .view-panel.hidden {
+        display: none;
+      }
+
+      @media (max-width: 720px) {
+        .app-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard-ranking-column {
+          position: static;
+        }
+
+        .side-menu {
+          position: static;
+        }
+
+        .workspace-topbar {
+          margin: 0 -22px 16px;
+          border-radius: 0;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .workspace-title {
+          font-size: 1.3rem;
+        }
+
+        .workspace-date {
+          font-size: 1rem;
+          padding: 8px 10px;
+        }
+
+        .workspace-area {
+          margin: 0 -22px -22px;
+          padding: 14px 10px 22px;
+        }
+
+        .topbar {
+          grid-template-columns: 1fr 1fr;
+          align-items: start;
+        }
+
+        .topbar-center {
+          display: none;
+        }
+
+        .brand-opes,
+        .brand-leoni {
+          align-self: start;
+        }
+
+        .brand-opes {
+          justify-self: start;
+        }
+
+        .brand-leoni {
+          justify-self: end;
+        }
+
+        .brand-opes .brand-logo {
+          height: 56px;
+        }
+
+        .brand-leoni .brand-logo {
+          height: 52px;
+        }
+
+        .auth-strip {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div id="loginHeader">
+        <div class="topbar">
+          <div class="brand brand-opes">
+            <img class="brand-logo" src="../Images/logo_opex-white-blue.png" alt="OPES" />
+          </div>
+          <div class="topbar-center" aria-label="Robot de bienvenue">
+            <div class="robot-wrap shadow">
+              <i class="bi bi-robot"></i>
+            </div>
+            <div id="welcomeBubble" class="welcome-bubble hidden">
+              Bienvenue <span id="welcomeName" class="welcome-name">invité</span> ! <i class="bi bi-hand-thumbs-up"></i>
+            </div>
+          </div>
+          <div class="brand brand-leoni">
+            <img class="brand-logo" src="../Images/Leoni_AG_Logo.svg.png" alt="LEONI" />
+          </div>
+        </div>
+
+        <div class="auth-strip">
+          <div id="authArea"></div>
+        </div>
+
+        <p id="welcomeLine" class="welcome-line hidden">Welcome to Efficiency Tracking</p>
+
+        <div id="statusBox" class="card"></div>
+      </div>
+
+
+      <div id="loginView" class="card">
+        <h2 class="login-head">Connexion</h2>
+        <form id="loginForm">
+          <label>Login</label>
+          <input id="login" type="text" autocomplete="username" required />
+          <label>Mot de passe</label>
+          <input id="password" type="password" required />
+          <div id="loginError" class="error"></div>
+          <button type="submit"><i class="bi bi-box-arrow-in-right"></i>Se connecter</button>
+        </form>
+      </div>
+
+      <div id="loginFoot" class="login-foot">© Created by Asmae Rhazir</div>
+
+      <div id="appView" class="hidden">
+        <header class="workspace-topbar">
+          <h1 class="workspace-title"><i class="bi bi-clipboard-data"></i> Efficiency tracking</h1>
+          <div id="workspaceDate" class="workspace-date"></div>
+        </header>
+
+        <div class="workspace-area">
+          <div class="app-layout">
+            <aside class="side-menu">
+              <div class="side-menu-header">
+                <h3><i class="bi bi-grid-1x2"></i> Navigation</h3>
+                <button class="nav-toggle" type="button" onclick="toggleNavigationMenu()" aria-label="Masquer ou afficher le menu">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </div>
+              <button id="btnAddData" class="menu-btn" onclick="navigateTo('add-data')"><i class="bi bi-pencil-square"></i><span class="menu-text">Saisie</span></button>
+              <button id="btnDashboard" class="menu-btn" onclick="navigateTo('dashboard')"><i class="bi bi-speedometer2"></i><span class="menu-text">Dashboard</span></button>
+              <button id="btnSuivi" class="menu-btn" onclick="navigateTo('suivi')"><i class="bi bi-calendar3"></i><span class="menu-text">Suivi</span></button>
+              <button id="btnAdmin" class="menu-btn" onclick="navigateTo('admin')"><i class="bi bi-sliders"></i><span class="menu-text">Parametres</span></button>
+              <div class="menu-separator"></div>
+              <button id="btnResetData" class="menu-btn action-warning" onclick="clearSessionEntries()"><i class="bi bi-trash"></i><span class="menu-text">Vider session</span></button>
+              <button id="btnLogout" class="menu-btn action-danger" onclick="logoutUser()"><i class="bi bi-box-arrow-right"></i><span class="menu-text">Déconnexion</span></button>
+            </aside>
+
+            <main>
+              <div id="dashboardView" class="view-panel card workspace-panel">
+                <div id="dashboardContent"></div>
+              </div>
+
+              <div id="suiviView" class="view-panel card workspace-panel hidden">
+                <div id="suiviContent"></div>
+              </div>
+
+              <div id="adminView" class="view-panel card workspace-panel hidden">
+                <div id="adminContent"></div>
+              </div>
+
+              <div id="addDataView" class="view-panel card workspace-panel hidden">
+                <div id="addDataContent"></div>
+              </div>
+
+              <div id="superAdminPanel" class="card workspace-panel hidden">
+                <h2>Vue coordination</h2>
+                <hr class="panel-rule">
+                <div id="superAdminContent"></div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+      const STORAGE_KEY = 'efficiency-demo-state-v1';
+      const firebaseConfig = {
+        apiKey: 'AIzaSyATY9OXX_hT2rgspA8ubf2dExH_58HFp5Y',
+        authDomain: 'efficiency-app-25687.firebaseapp.com',
+        projectId: 'efficiency-app-25687',
+        storageBucket: 'efficiency-app-25687.firebasestorage.app',
+        messagingSenderId: '410209988377',
+        appId: '1:410209988377:web:1fd2c00557a869ac341f88'
+      };
+
+      let auth = null;
+      let db = null;
+      let useFirebase = false;
+      let currentUser = null;
+      let demoState = null;
+      let appDropdowns = [];
+      let appEntries = [];
+      let appGammes = [];
+      let appLines = [];
+      let pendingGammes = [];
+      let editingManagedLine = '';
+      let entryReferenceRowCount = 0;
+      let dashboardChart = null;
+      let dashboardSelectedDate = '';
+      let dashboardGlobalRfc = '';
+      let dashboardRankingMode = 'efficiency';
+      let dashboardSelectedUserId = '';
+      let navigationCollapsed = false;
+      const WORKING_HOURS = 8;
+      const DEMO_ACCOUNTS = [
+        { id: 'u-pdb', login: 'pdb', password: 'pdb2026', email: 'pdb@example.com', role: 'user' },
+        { id: 'u-lowdash', login: 'Lowdash', password: 'lowdash2026', email: 'lowdash@example.com', role: 'user' },
+        { id: 'u-x1310egr', login: 'X1310EGR', password: 'X1310EGR2026', email: 'x1310egr@example.com', role: 'user' },
+        { id: 'u-engine', login: 'Engine', password: 'Engine2026', email: 'engine@example.com', role: 'user' },
+        { id: 'u-p13amainbody', login: 'P13AMAINBODY', password: 'P13AMAINBODY2026', email: 'p13amainbody@example.com', role: 'user' },
+        { id: 'u-p13aegr', login: 'P13AEGR', password: 'P13AEGR2026', email: 'p13aegr@example.com', role: 'user' },
+        { id: 'u-x1310smalls', login: 'X1310Smalls', password: 'X1310Smalls2026', email: 'x1310smalls@example.com', role: 'user' },
+        { id: 'u-p13asmalls', login: 'P13ASmalls', password: 'P13ASmalls2026', email: 'p13asmalls@example.com', role: 'user' },
+        { id: 'u-super', login: 'ARadmin', password: 'ARadmin2026', email: 'superadmin@example.com', role: 'superadmin' }
+      ];
+
+      function getInitialState() {
+        return {
+          users: DEMO_ACCOUNTS.map(({ password, ...user }) => user),
+          dropdowns: [
+            { id: 'd1', userId: 'u-pdb', label: 'Rouge', value: 'rouge', category: 'couleur' },
+            { id: 'd2', userId: 'u-pdb', label: 'Bleu', value: 'bleu', category: 'couleur' },
+            { id: 'd3', userId: 'u-super', label: 'Petit', value: 'petit', category: 'taille' }
+          ],
+          gammes: [
+            { id: 'g1', user_id: 'u-pdb', line: 'Ligne 1', reference: 'REF-100', gamme_time: 0.12 },
+            { id: 'g2', user_id: 'u-pdb', line: 'Ligne 2', reference: 'REF-200', gamme_time: 0.18 }
+          ],
+          lines: DEMO_ACCOUNTS.flatMap((account) => [
+            { id: `line-${account.id}-1`, user_id: account.id, name: 'Ligne 1' },
+            { id: `line-${account.id}-2`, user_id: account.id, name: 'Ligne 2' },
+            { id: `line-${account.id}-3`, user_id: account.id, name: 'Ligne 3' }
+          ]),
+          entries: []
+        };
+      }
+
+      function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          demoState = JSON.parse(saved);
+          const savedUsers = demoState.users || [];
+          const mergedUsers = new Map(savedUsers.map((user) => [user.id, user]));
+          DEMO_ACCOUNTS.forEach(({ password, ...user }) => {
+            mergedUsers.set(user.id, { ...mergedUsers.get(user.id), ...user });
+          });
+          demoState.users = Array.from(mergedUsers.values());
+          demoState.dropdowns = demoState.dropdowns || [];
+          demoState.gammes = demoState.gammes || [];
+          demoState.lines = Array.isArray(demoState.lines) ? demoState.lines.map((item, index) => {
+            if (typeof item === 'string') {
+              return { id: `legacy-line-${index}`, user_id: 'u-pdb', name: item };
+            }
+            return item;
+          }) : getInitialState().lines;
+          demoState.entries = demoState.entries || [];
+          return;
+        }
+        demoState = getInitialState();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(demoState));
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(demoState));
+      }
+
+      function isFirebaseConfigured() {
+        return Object.values(firebaseConfig).every((value) => typeof value === 'string' && value && !value.includes('YOUR_'));
+      }
+
+      function normalizeHeader(value) {
+        return String(value || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+      }
+
+      function toNumber(value) {
+        const normalized = String(value ?? '').replace(',', '.').trim();
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : NaN;
+      }
+
+      function buildGammeKey(line, reference) {
+        return `${String(line || '').trim().toLowerCase()}__${String(reference || '').trim().toLowerCase()}`;
+      }
+
+      function buildOwnedGammeKey(ownerId, line, reference) {
+        return `${String(ownerId || '').trim().toLowerCase()}__${buildGammeKey(line, reference)}`;
+      }
+
+      function getOwnedLinesFromState() {
+        const storedLines = Array.isArray(demoState?.lines) ? demoState.lines : [];
+        return storedLines.filter((item) => item && item.user_id === currentUser?.id);
+      }
+
+      function persistOwnedLines(nextLineNames) {
+        const otherLines = (Array.isArray(demoState?.lines) ? demoState.lines : []).filter((item) => item && item.user_id !== currentUser?.id);
+        demoState.lines = [
+          ...otherLines,
+          ...nextLineNames.map((name, index) => ({ id: `line-${currentUser.id}-${index}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`, user_id: currentUser.id, name }))
+        ];
+      }
+
+      function getTodayKey() {
+        return new Date().toISOString().slice(0, 10);
+      }
+
+      function getEntryDate(item) {
+        if (item.entry_date) return String(item.entry_date).slice(0, 10);
+        if (item.created_at) return String(item.created_at).slice(0, 10);
+        return getTodayKey();
+      }
+
+      function formatDateLabel(dateKey) {
+        if (!dateKey) return '-';
+        const dateObj = new Date(`${dateKey}T00:00:00`);
+        return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
+      }
+
+      function getAvailableEntryDates() {
+        const sourceEntries = currentUser && currentUser.role === 'superadmin'
+          ? getDashboardEntries()
+          : appEntries.filter((item) => item.user_id === currentUser?.id || item.userId === currentUser?.id);
+        const dates = sourceEntries.map((item) => getEntryDate(item)).filter(Boolean);
+        dates.push(getTodayKey());
+        return [...new Set(dates)].sort((a, b) => b.localeCompare(a));
+      }
+
+      function getDateBounds() {
+        const dates = getAvailableEntryDates().slice().sort((a, b) => a.localeCompare(b));
+        return {
+          min: dates[0] || getTodayKey(),
+          max: dates[dates.length - 1] || getTodayKey()
+        };
+      }
+
+      function getAvailableLines() {
+        if (!Array.isArray(appLines)) return [];
+        return [...new Set(appLines.filter(Boolean))];
+      }
+
+      function findGammeByReference(reference, line) {
+        const ref = String(reference || '').trim().toLowerCase();
+        if (!ref) return null;
+
+        const byLine = appGammes.find((item) =>
+          String(item.reference || '').trim().toLowerCase() === ref
+          && String(item.line || '').trim().toLowerCase() === String(line || '').trim().toLowerCase()
+        );
+
+        if (byLine) return byLine;
+
+        return appGammes.find((item) => String(item.reference || '').trim().toLowerCase() === ref) || null;
+      }
+
+      function calculateEfficiency(quantity, gammeTime, effectif) {
+        if (!quantity || !gammeTime || !effectif) return 0;
+        return ((quantity * gammeTime) / (effectif * WORKING_HOURS)) * 100;
+      }
+
+      function calculateEcart(efficiency, rfc) {
+        return Number((Number(efficiency || 0) - Number(rfc || 0)).toFixed(2));
+      }
+
+      function initFirebaseIfPossible() {
+        if (!isFirebaseConfigured()) {
+          document.getElementById('statusBox').innerHTML = '';
+          return;
+        }
+
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+          auth = firebase.auth();
+          db = firebase.firestore();
+          useFirebase = true;
+          document.getElementById('statusBox').innerHTML = '';
+        } catch (error) {
+          useFirebase = false;
+          document.getElementById('statusBox').innerHTML = '';
+        }
+      }
+
+      function setAuthArea() {
+        const area = document.getElementById('authArea');
+        if (!currentUser) {
+          area.innerHTML = '';
+          document.getElementById('welcomeName').textContent = 'invité';
+          document.getElementById('welcomeBubble').classList.add('hidden');
+          document.getElementById('welcomeLine').classList.add('hidden');
+          return;
+        }
+        area.innerHTML = `<span class="pill">${currentUser.login || currentUser.email}</span>`;
+        const displayName = currentUser.login || (currentUser.email ? currentUser.email.split('@')[0] : 'utilisateur');
+        document.getElementById('welcomeName').textContent = displayName;
+        document.getElementById('welcomeBubble').classList.remove('hidden');
+        document.getElementById('welcomeLine').classList.remove('hidden');
+      }
+
+      function showApp() {
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('loginFoot').classList.add('hidden');
+        document.getElementById('loginHeader').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        const userBadge = document.getElementById('userBadge');
+        if (userBadge) {
+          userBadge.textContent = currentUser.login || currentUser.email;
+        }
+        document.getElementById('superAdminPanel').classList.toggle('hidden', currentUser.role !== 'superadmin');
+        applyRoleNavigationVisibility();
+        updateWorkspaceDate();
+        applyNavigationState();
+        refreshDataAndRender();
+      }
+
+      function showLogin() {
+        document.getElementById('loginHeader').classList.remove('hidden');
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('loginFoot').classList.remove('hidden');
+        document.getElementById('appView').classList.add('hidden');
+      }
+
+      function loginUser(user) {
+        currentUser = user;
+        setAuthArea();
+        showApp();
+      }
+
+      function logoutUser() {
+        currentUser = null;
+        localStorage.removeItem('efficiency-user');
+        localStorage.removeItem('efficiency_nav_collapsed');
+        if (useFirebase && auth) {
+          auth.signOut();
+        }
+        setAuthArea();
+        showLogin();
+      }
+
+      function applyRoleNavigationVisibility() {
+        const dashboardOnly = currentUser?.role === 'superadmin';
+        const btnAddData = document.getElementById('btnAddData');
+        const btnDashboard = document.getElementById('btnDashboard');
+        const btnSuivi = document.getElementById('btnSuivi');
+        const btnAdmin = document.getElementById('btnAdmin');
+        const btnResetData = document.getElementById('btnResetData');
+        const btnLogout = document.getElementById('btnLogout');
+        const separator = document.querySelector('.menu-separator');
+
+        if (btnAddData) btnAddData.style.display = dashboardOnly ? 'none' : '';
+        if (btnSuivi) btnSuivi.style.display = dashboardOnly ? 'none' : '';
+        if (btnAdmin) btnAdmin.style.display = dashboardOnly ? 'none' : '';
+        if (btnResetData) btnResetData.style.display = dashboardOnly ? 'none' : '';
+        if (separator) separator.style.display = dashboardOnly ? 'none' : '';
+        if (btnDashboard) btnDashboard.style.display = '';
+        if (btnLogout) btnLogout.style.display = '';
+      }
+
+      function applyNavigationState() {
+        const nav = document.querySelector('.side-menu');
+        const layout = document.querySelector('.app-layout');
+        if (!nav) return;
+        nav.classList.toggle('collapsed', navigationCollapsed);
+        if (layout) {
+          layout.classList.toggle('nav-collapsed', navigationCollapsed);
+        }
+      }
+
+      function toggleNavigationMenu() {
+        navigationCollapsed = !navigationCollapsed;
+        localStorage.setItem('efficiency_nav_collapsed', navigationCollapsed ? '1' : '0');
+        applyNavigationState();
+      }
+
+      function setMenuActive(view) {
+        const dashboardOnly = currentUser?.role === 'superadmin';
+        document.getElementById('btnAddData').classList.toggle('active', !dashboardOnly && view === 'add-data');
+        document.getElementById('btnDashboard').classList.toggle('active', view === 'dashboard');
+        document.getElementById('btnSuivi').classList.toggle('active', !dashboardOnly && view === 'suivi');
+        document.getElementById('btnAdmin').classList.toggle('active', !dashboardOnly && view === 'admin');
+      }
+
+      function navigateTo(view) {
+        const dashboardOnly = currentUser?.role === 'superadmin';
+        const safeView = dashboardOnly ? 'dashboard' : view;
+        document.getElementById('dashboardView').classList.toggle('hidden', safeView !== 'dashboard');
+        document.getElementById('suiviView').classList.toggle('hidden', dashboardOnly || safeView !== 'suivi');
+        document.getElementById('adminView').classList.toggle('hidden', dashboardOnly || safeView !== 'admin');
+        document.getElementById('addDataView').classList.toggle('hidden', dashboardOnly || safeView !== 'add-data');
+        document.getElementById('btnAddData').classList.toggle('hidden', dashboardOnly);
+        document.getElementById('btnSuivi').classList.toggle('hidden', dashboardOnly);
+        document.getElementById('btnAdmin').classList.toggle('hidden', dashboardOnly);
+        document.getElementById('btnResetData').classList.toggle('hidden', dashboardOnly);
+        document.getElementById('btnDashboard').classList.toggle('hidden', false);
+        document.getElementById('btnLogout').classList.toggle('hidden', false);
+        document.querySelector('.menu-separator')?.classList.toggle('hidden', dashboardOnly);
+        applyRoleNavigationVisibility();
+        setMenuActive(view);
+
+        if (!dashboardOnly && view === 'suivi') {
+          renderSuivi();
+        }
+      }
+
+      function getDashboardOwnerId() {
+        if (currentUser.role !== 'superadmin') return currentUser.id;
+        return dashboardSelectedUserId || 'all';
+      }
+
+      function getDashboardEntries() {
+        const ownerId = getDashboardOwnerId();
+        if (currentUser.role !== 'superadmin') {
+          return appEntries.filter((item) => item.user_id === currentUser.id || item.userId === currentUser.id);
+        }
+        if (ownerId === 'all') {
+          return appEntries.filter((item) => item.user_id || item.userId);
+        }
+        return appEntries.filter((item) => item.user_id === ownerId || item.userId === ownerId);
+      }
+
+      function getDashboardSelectableUsers() {
+        if (currentUser.role !== 'superadmin') return [];
+
+        const userById = new Map((demoState.users || []).map((user) => [user.id, user]));
+        return DEMO_ACCOUNTS
+          .filter((account) => account.role !== 'superadmin')
+          .map(({ password, ...user }) => userById.get(user.id) || user)
+          .filter(Boolean);
+      }
+
+      function getUserLabelById(userId) {
+        const user = getDashboardSelectableUsers().find((item) => item.id === userId);
+        return user ? user.login : String(userId || 'Plant');
+      }
+
+      function updateWorkspaceDate() {
+        const dateLabel = new Intl.DateTimeFormat('fr-FR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }).format(new Date());
+        document.getElementById('workspaceDate').textContent = dateLabel;
+      }
+
+      async function clearSessionEntries() {
+        if (!currentUser) return;
+
+        if (!useFirebase) {
+          demoState.entries = demoState.entries.filter((entry) => entry.user_id !== currentUser.id && entry.userId !== currentUser.id);
+          saveState();
+          await refreshDataAndRender();
+          return;
+        }
+
+        const snapshot = await db.collection('entries').where('user_id', '==', currentUser.id).get();
+        const deleteTasks = snapshot.docs.map((docItem) => docItem.ref.delete());
+        await Promise.all(deleteTasks);
+        await refreshDataAndRender();
+      }
+
+      async function loadAppData() {
+        if (!useFirebase) {
+          appDropdowns = [...demoState.dropdowns];
+          appEntries = [...demoState.entries];
+          appGammes = [...(demoState.gammes || []).filter((item) => item.user_id === currentUser?.id)];
+          appLines = getOwnedLinesFromState().map((item) => item.name).filter(Boolean);
+          if (!appLines.length) {
+            appLines = ['Ligne 1', 'Ligne 2', 'Ligne 3'];
+          }
+          return;
+        }
+
+        const dropdownSnapshot = await db.collection('dropdown_options').get();
+        appDropdowns = dropdownSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+
+        const entriesSnapshot = await db.collection('entries').get();
+        appEntries = entriesSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+
+        const gammesSnapshot = await db.collection('gammes').where('user_id', '==', currentUser.id).get();
+        appGammes = gammesSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+
+        const linesSnapshot = await db.collection('production_lines').where('user_id', '==', currentUser.id).get();
+        appLines = linesSnapshot.docs.map((item) => item.data().name || item.data().label || '').filter(Boolean);
+        if (!appLines.length) {
+          appLines = ['Ligne 1', 'Ligne 2', 'Ligne 3'];
+        }
+      }
+
+      async function refreshDataAndRender() {
+        await loadAppData();
+        renderDashboard();
+        renderSuivi();
+        renderAdmin();
+        renderAddData();
+        renderSuperAdmin();
+        navigateTo('dashboard');
+      }
+
+      function renderDashboard() {
+        const userEntries = getDashboardEntries();
+        if (currentUser.role === 'superadmin' && !dashboardSelectedUserId) {
+          dashboardSelectedUserId = 'all';
+        }
+
+        const availableDates = getAvailableEntryDates();
+        const defaultDate = dashboardSelectedDate || availableDates[0] || getTodayKey();
+        const dateBounds = getDateBounds();
+        const defaultRfc = Number.isFinite(Number(dashboardGlobalRfc))
+          ? Number(dashboardGlobalRfc)
+          : (userEntries.length ? userEntries.reduce((sum, item) => sum + Number(item.rfc || 0), 0) / userEntries.length : 0);
+        const selectableUsers = getDashboardSelectableUsers();
+        const accountSelectHtml = currentUser.role === 'superadmin'
+          ? `
+            <label class="field-label mb-0">Plant:</label>
+            <select id="dashboardUserFilter" class="entry-select" style="max-width:240px" onchange="onDashboardUserChange()">
+              <option value="all" ${dashboardSelectedUserId === 'all' ? 'selected' : ''}>Tous les plants</option>
+              ${selectableUsers.map((user) => `<option value="${user.id}" ${dashboardSelectedUserId === user.id ? 'selected' : ''}>${user.login}</option>`).join('')}
+            </select>
+          `
+          : '';
+
+        let html = '<hr class="panel-rule">';
+
+        html += `
+          <div class="dashboard-layout">
+            <div class="dashboard-main-column">
+              <div class="dashboard-summary-grid">
+                <div class="dashboard-summary-card">
+                  <p class="dashboard-summary-label">Effectif total</p>
+                  <p id="summaryEffectif" class="dashboard-summary-value">0</p>
+                </div>
+                <div class="dashboard-summary-card">
+                  <p class="dashboard-summary-label">Heures produites</p>
+                  <p id="summaryHours" class="dashboard-summary-value">0 h</p>
+                </div>
+                <div class="dashboard-summary-card">
+                  <p class="dashboard-summary-label">Cadence totale</p>
+                  <p id="summaryCadence" class="dashboard-summary-value">0</p>
+                </div>
+                <div class="dashboard-summary-card">
+                  <p class="dashboard-summary-label">Efficience globale</p>
+                  <p id="summaryEfficiency" class="dashboard-summary-value">0%</p>
+                </div>
+              </div>
+              <div class="dashboard-toolbar">
+                ${accountSelectHtml}
+                <label class="field-label mb-0">Date:</label>
+                <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}" style="max-width:260px" onchange="onDashboardDateChange()">
+                <label class="field-label mb-0">RFC global:</label>
+                <input id="dashboardRfcFilter" class="entry-input" type="number" min="0" step="0.01" value="${defaultRfc.toFixed(2)}" style="max-width:170px" oninput="onDashboardRfcChange()">
+              </div>
+              <div class="chart-box">
+                <canvas id="dashboardEfficiencyChart" class="chart-canvas"></canvas>
+              </div>
+            </div>
+            <aside class="dashboard-ranking-column">
+              <div class="nav-ranking-panel">
+                <div class="nav-ranking-header">
+                  <h4><i class="bi bi-trophy-fill"></i> Ranking challenge</h4>
+                  <div class="ranking-mode-toggle" aria-label="Mode de classement">
+                    <button id="rankingModeEfficiency" class="ranking-mode-btn active" type="button" onclick="setRankingMode('efficiency')">Efficiency</button>
+                    <button id="rankingModeEcart" class="ranking-mode-btn" type="button" onclick="setRankingMode('ecart')">Ecart RFC</button>
+                  </div>
+                </div>
+                <div id="dashboardRankingContent" class="nav-ranking-list"></div>
+              </div>
+            </aside>
+          </div>
+        `;
+
+        if (!userEntries.length) {
+          html += '<p class="muted">Aucune saisie d\'efficience pour le moment.</p>';
+        }
+        document.getElementById('dashboardContent').innerHTML = html;
+        onDashboardDateChange();
+      }
+
+      function renderSuivi() {
+        const ownedEntries = appEntries.filter((item) => currentUser.role === 'superadmin' || item.user_id === currentUser.id || item.userId === currentUser.id);
+        const dates = getAvailableEntryDates();
+        const selectedDate = dashboardSelectedDate || dates[0] || getTodayKey();
+        const dateBounds = getDateBounds();
+
+        let html = `
+          <h2><i class="bi bi-calendar3"></i> Suivi des saisies</h2>
+          <hr class="panel-rule">
+          <div class="dashboard-toolbar">
+            <label class="field-label mb-0">Date:</label>
+            <input id="suiviDateFilter" class="entry-input" type="date" value="${selectedDate}" min="${dateBounds.min}" max="${dateBounds.max}" style="max-width:260px" onchange="onSuiviDateChange()">
+          </div>
+          <div id="suiviTableWrap"></div>
+        `;
+
+        document.getElementById('suiviContent').innerHTML = html;
+        onSuiviDateChange();
+      }
+
+      function onSuiviDateChange() {
+        const dateEl = document.getElementById('suiviDateFilter');
+        const wrapEl = document.getElementById('suiviTableWrap');
+        if (!dateEl || !wrapEl) return;
+
+        const selectedDate = dateEl.value || getTodayKey();
+        dashboardSelectedDate = selectedDate;
+
+        const filtered = appEntries
+          .filter((item) => (currentUser.role === 'superadmin' || item.user_id === currentUser.id || item.userId === currentUser.id) && getEntryDate(item) === selectedDate)
+          .slice()
+          .reverse();
+
+        if (!filtered.length) {
+          wrapEl.innerHTML = '<p class="muted">Aucune saisie pour cette date.</p>';
+          return;
+        }
+
+        let table = '<div class="table-wrap"><table class="simple-table"><thead><tr><th>Date</th><th>Ligne</th><th>Référence</th><th>Effectif</th><th>Quantité</th><th>Temps gamme</th><th>RFC</th><th>Efficience</th><th>Écart</th></tr></thead><tbody>';
+        filtered.forEach((item) => {
+          const rfcVal = Number(item.rfc || 0);
+          const effVal = Number(item.efficiency || 0);
+          const ecartVal = Number.isFinite(Number(item.ecart)) ? Number(item.ecart) : calculateEcart(effVal, rfcVal);
+          const ecartClass = ecartVal >= 0 ? 'status-chip status-good' : 'status-chip status-bad';
+          const ecartLabel = `${ecartVal >= 0 ? '+' : ''}${ecartVal.toFixed(2)}%`;
+          table += `<tr><td>${formatDateLabel(getEntryDate(item))}</td><td>${item.line || '-'}</td><td>${item.reference || '-'}</td><td>${item.effectif || '-'}</td><td>${item.quantity || '-'}</td><td>${item.gamme_time || '-'} h</td><td>${rfcVal.toFixed(2)}%</td><td>${effVal.toFixed(2)}%</td><td><span class="${ecartClass}">${ecartLabel}</span></td></tr>`;
+        });
+        table += '</tbody></table></div>';
+        wrapEl.innerHTML = table;
+      }
+
+      function onDashboardDateChange() {
+        const selectEl = document.getElementById('dashboardDateFilter');
+        if (!selectEl) return;
+
+        const selectedDate = selectEl.value;
+        dashboardSelectedDate = selectedDate;
+        const filtered = getDashboardEntries().filter((item) => getEntryDate(item) === selectedDate);
+
+        const effectifTotal = filtered.reduce((sum, item) => sum + Number(item.effectif || 0), 0);
+        const cadenceTotal = filtered.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        const weightedOutput = filtered.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.gamme_time || 0)), 0);
+        const hoursProduced = weightedOutput;
+        const availableHours = effectifTotal * WORKING_HOURS;
+        const globalEfficiency = availableHours > 0 ? (weightedOutput / availableHours) * 100 : 0;
+
+        const summaryEffectif = document.getElementById('summaryEffectif');
+        const summaryHours = document.getElementById('summaryHours');
+        const summaryCadence = document.getElementById('summaryCadence');
+        const summaryEfficiency = document.getElementById('summaryEfficiency');
+        if (summaryEffectif) summaryEffectif.textContent = `${effectifTotal}`;
+        if (summaryHours) summaryHours.textContent = `${hoursProduced.toFixed(2)} h`;
+        if (summaryCadence) summaryCadence.textContent = `${cadenceTotal}`;
+        if (summaryEfficiency) summaryEfficiency.textContent = `${globalEfficiency.toFixed(2)}%`;
+
+        const rfcInput = document.getElementById('dashboardRfcFilter');
+        const globalRfc = Number.isFinite(Number(rfcInput?.value))
+          ? Number(rfcInput.value)
+          : (filtered.length ? filtered.reduce((sum, item) => sum + Number(item.rfc || 0), 0) / filtered.length : 0);
+
+        renderNavRanking(filtered);
+
+        let labels = [];
+        let values = [];
+        let colors = [];
+        let borders = [];
+
+        if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
+          const byUser = new Map();
+          filtered.forEach((item) => {
+            const ownerId = item.user_id || item.userId;
+            if (!ownerId) return;
+            const existing = byUser.get(ownerId) || { effectifTotal: 0, weightedOutput: 0 };
+            existing.effectifTotal += Number(item.effectif || 0);
+            existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
+            byUser.set(ownerId, existing);
+          });
+
+          const accountMetrics = Array.from(byUser.entries()).map(([ownerId, data]) => {
+            const hours = data.effectifTotal * WORKING_HOURS;
+            const efficiency = hours > 0 ? (data.weightedOutput / hours) * 100 : 0;
+            return {
+              label: getUserLabelById(ownerId),
+              value: Number(efficiency.toFixed(2))
+            };
+          }).sort((a, b) => b.value - a.value);
+
+          labels = accountMetrics.map((item) => item.label);
+          values = accountMetrics.map((item) => item.value);
+          colors = accountMetrics.map((item) => item.value - globalRfc < 0 ? 'rgba(220, 53, 69, 0.85)' : 'rgba(25, 135, 84, 0.85)');
+          borders = accountMetrics.map((item) => item.value - globalRfc < 0 ? 'rgba(176, 34, 50, 1)' : 'rgba(17, 109, 65, 1)');
+        } else {
+          const byLine = new Map();
+          filtered.forEach((item) => {
+            const line = item.line || 'Sans ligne';
+            const existing = byLine.get(line) || { effectifTotal: 0, weightedOutput: 0, rfcSum: 0, count: 0 };
+            existing.effectifTotal += Number(item.effectif || 0);
+            existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
+            existing.rfcSum += Number(item.rfc || 0);
+            existing.count += 1;
+            byLine.set(line, existing);
+          });
+
+          labels = Array.from(byLine.keys());
+          values = labels.map((line) => {
+            const data = byLine.get(line);
+            const hours = Number(data.effectifTotal || 0) * WORKING_HOURS;
+            const globalLineEfficiency = hours > 0 ? (Number(data.weightedOutput || 0) / hours) * 100 : 0;
+            return Number(globalLineEfficiency.toFixed(2));
+          });
+          colors = labels.map((line) => {
+            const index = labels.indexOf(line);
+            const lineEff = Number(values[index] || 0);
+            const lineEcart = lineEff - globalRfc;
+            return lineEcart < 0 ? 'rgba(220, 53, 69, 0.85)' : 'rgba(25, 135, 84, 0.85)';
+          });
+          borders = labels.map((line) => {
+            const index = labels.indexOf(line);
+            const lineEff = Number(values[index] || 0);
+            const lineEcart = lineEff - globalRfc;
+            return lineEcart < 0 ? 'rgba(176, 34, 50, 1)' : 'rgba(17, 109, 65, 1)';
+          });
+        }
+
+        const canvas = document.getElementById('dashboardEfficiencyChart');
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        const ctx = canvas.getContext('2d');
+        if (dashboardChart) {
+          dashboardChart.destroy();
+          dashboardChart = null;
+        }
+
+        const barValueLabelPlugin = {
+          id: 'barValueLabelPlugin',
+          afterDatasetsDraw(chart) {
+            const barDataset = chart.data.datasets[0];
+            const meta = chart.getDatasetMeta(0);
+            if (!barDataset || !meta || meta.hidden) return;
+
+            const { ctx: chartContext } = chart;
+            chartContext.save();
+            chartContext.fillStyle = '#ffffff';
+            chartContext.textAlign = 'center';
+            chartContext.textBaseline = 'middle';
+            chartContext.font = '800 20px "Plus Jakarta Sans", sans-serif';
+
+            meta.data.forEach((barElement, index) => {
+              const value = Number(barDataset.data[index] || 0);
+              if (!Number.isFinite(value) || value <= 0) return;
+
+              const centerX = barElement.x;
+              const centerY = (barElement.y + barElement.base) / 2;
+              chartContext.fillText(`${value.toFixed(2)}%`, centerX, centerY);
+            });
+
+            chartContext.restore();
+          }
+        };
+
+        dashboardChart = new Chart(ctx, {
+          plugins: [barValueLabelPlugin],
+          type: 'bar',
+          data: {
+            labels: labels.length ? labels : ['Aucune donnée'],
+            datasets: [{
+              label: 'Efficience moyenne (%)',
+              data: values.length ? values : [0],
+              backgroundColor: colors.length ? colors : ['rgba(13, 50, 96, 0.8)'],
+              borderColor: borders.length ? borders : ['rgba(255, 122, 26, 1)'],
+              borderWidth: 1,
+              borderRadius: 8
+            }, {
+              type: 'line',
+              label: 'RFC global (%)',
+              data: labels.length ? labels.map(() => Number(globalRfc.toFixed(2))) : [Number(globalRfc.toFixed(2))],
+              borderColor: '#0d6efd',
+              backgroundColor: 'rgba(13, 110, 253, 0.12)',
+              borderWidth: 3,
+              tension: 0,
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              pointBackgroundColor: '#0d6efd',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Valeurs (%)' }
+              },
+              x: {
+                title: { display: true, text: 'Lignes' }
+              }
+            },
+            plugins: {
+              legend: { display: true }
+            }
+          }
+        });
+      }
+
+      function renderNavRanking(filteredEntries) {
+        const rankingEl = document.getElementById('dashboardRankingContent');
+        if (!rankingEl) return;
+
+        const sourceEntries = filteredEntries.filter((item) => currentUser.role === 'superadmin' || item.user_id === currentUser.id || item.userId === currentUser.id);
+
+        if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
+          const byUser = new Map();
+          sourceEntries.forEach((item) => {
+            const ownerId = item.user_id || item.userId;
+            if (!ownerId) return;
+            const existing = byUser.get(ownerId) || { effectifTotal: 0, weightedOutput: 0, rfcSum: 0, count: 0 };
+            existing.effectifTotal += Number(item.effectif || 0);
+            existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
+            existing.rfcSum += Number(item.rfc || 0);
+            existing.count += 1;
+            byUser.set(ownerId, existing);
+          });
+
+          const rankingByUser = Array.from(byUser.entries()).map(([ownerId, data]) => {
+            const hours = data.effectifTotal * WORKING_HOURS;
+            const avgEfficiency = hours > 0 ? (data.weightedOutput / hours) * 100 : 0;
+            const avgRfc = data.count ? data.rfcSum / data.count : 0;
+            const ecart = avgEfficiency - avgRfc;
+            return { line: getUserLabelById(ownerId), avgEfficiency, avgRfc, ecart, count: data.count };
+          }).sort((a, b) => {
+            if (dashboardRankingMode === 'ecart') {
+              if (b.ecart !== a.ecart) return b.ecart - a.ecart;
+              if (b.avgEfficiency !== a.avgEfficiency) return b.avgEfficiency - a.avgEfficiency;
+            } else if (b.avgEfficiency !== a.avgEfficiency) {
+              return b.avgEfficiency - a.avgEfficiency;
+            }
+            return a.line.localeCompare(b.line, 'fr', { sensitivity: 'base' });
+          }).slice(0, 5);
+
+          if (!rankingByUser.length) {
+            rankingEl.innerHTML = '<p class="dashboard-ranking-empty">Aucun plant saisi pour cette date.</p>';
+            return;
+          }
+
+          const medals = ['🥇', '🥈', '🥉'];
+          rankingEl.innerHTML = rankingByUser.map((item, index) => {
+            const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+            const rankLabel = medals[index] || `${index + 1}`;
+            const ecartLabel = `${item.ecart >= 0 ? '+' : ''}${item.ecart.toFixed(2)}%`;
+            const ecartClass = item.ecart >= 0 ? 'ranking-good' : 'ranking-bad';
+            return `
+              <div class="nav-ranking-item ${topClass}">
+                <div class="nav-ranking-line">
+                  <span class="nav-ranking-medal">${rankLabel}</span>
+                  <span>${item.line}</span>
+                </div>
+                <p class="nav-ranking-meta">Efficience: ${item.avgEfficiency.toFixed(2)}% | RFC: ${item.avgRfc.toFixed(2)}%</p>
+                <p class="nav-ranking-meta ${ecartClass}">Écart ${ecartLabel} | ${item.count} saisie(s)</p>
+              </div>
+            `;
+          }).join('');
+          return;
+        }
+
+        const byLine = new Map();
+        sourceEntries.forEach((item) => {
+          const line = item.line || item.ligne || item.line_name || item.lineName || 'Sans ligne';
+          const existing = byLine.get(line) || { effectifTotal: 0, weightedOutput: 0, rfcSum: 0, count: 0 };
+          existing.effectifTotal += Number(item.effectif || 0);
+          existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
+          existing.rfcSum += Number(item.rfc || 0);
+          existing.count += 1;
+          byLine.set(line, existing);
+        });
+
+        const ranking = Array.from(byLine.entries()).map(([line, data]) => {
+          const hours = Number(data.effectifTotal || 0) * WORKING_HOURS;
+          const avgEfficiency = hours > 0 ? (Number(data.weightedOutput || 0) / hours) * 100 : 0;
+          const avgRfc = data.count ? data.rfcSum / data.count : 0;
+          const ecart = avgEfficiency - avgRfc;
+          return { line, avgEfficiency, avgRfc, ecart, count: data.count };
+        })
+          .sort((a, b) => {
+            if (dashboardRankingMode === 'ecart') {
+              if (b.ecart !== a.ecart) return b.ecart - a.ecart;
+              if (b.avgEfficiency !== a.avgEfficiency) return b.avgEfficiency - a.avgEfficiency;
+            } else if (b.avgEfficiency !== a.avgEfficiency) {
+              return b.avgEfficiency - a.avgEfficiency;
+            }
+            return a.line.localeCompare(b.line, 'fr', { sensitivity: 'base' });
+          })
+          .slice(0, 5);
+
+        if (!ranking.length) {
+          rankingEl.innerHTML = '<p class="dashboard-ranking-empty">Aucune ligne saisie pour cette date.</p>';
+          return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+        rankingEl.innerHTML = ranking.map((item, index) => {
+          const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+          const rankLabel = medals[index] || `${index + 1}`;
+          const ecartLabel = `${item.ecart >= 0 ? '+' : ''}${item.ecart.toFixed(2)}%`;
+          const ecartClass = item.ecart >= 0 ? 'ranking-good' : 'ranking-bad';
+          return `
+            <div class="nav-ranking-item ${topClass}">
+              <div class="nav-ranking-line">
+                <span class="nav-ranking-medal">${rankLabel}</span>
+                <span>${item.line}</span>
+              </div>
+              <p class="nav-ranking-meta">Efficience: ${item.avgEfficiency.toFixed(2)}% | RFC: ${item.avgRfc.toFixed(2)}%</p>
+              <p class="nav-ranking-meta ${ecartClass}">Écart ${ecartLabel} | ${item.count} saisie(s)</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function onDashboardRfcChange() {
+        const rfcEl = document.getElementById('dashboardRfcFilter');
+        dashboardGlobalRfc = rfcEl ? rfcEl.value : '';
+        onDashboardDateChange();
+      }
+
+      function onDashboardUserChange() {
+        const userEl = document.getElementById('dashboardUserFilter');
+        dashboardSelectedUserId = userEl ? userEl.value : 'all';
+        renderDashboard();
+      }
+
+      function setRankingMode(mode) {
+        dashboardRankingMode = mode === 'ecart' ? 'ecart' : 'efficiency';
+        const efficiencyBtn = document.getElementById('rankingModeEfficiency');
+        const ecartBtn = document.getElementById('rankingModeEcart');
+        if (efficiencyBtn) efficiencyBtn.classList.toggle('active', dashboardRankingMode === 'efficiency');
+        if (ecartBtn) ecartBtn.classList.toggle('active', dashboardRankingMode === 'ecart');
+        onDashboardDateChange();
+      }
+
+      async function addManagedLine() {
+        const inputEl = document.getElementById('managedLineInput');
+        const statusEl = document.getElementById('lineManageStatus');
+        const value = String(inputEl?.value || '').trim();
+        if (!value) {
+          if (statusEl) statusEl.textContent = 'Saisis un nom de ligne.';
+          return;
+        }
+
+        const currentLines = Array.isArray(appLines) ? appLines : [];
+        const editingKey = String(editingManagedLine || '').trim().toLowerCase();
+        if (currentLines.some((item) => String(item).trim().toLowerCase() === value.toLowerCase() && String(item).trim().toLowerCase() !== editingKey)) {
+          if (statusEl) statusEl.textContent = 'Cette ligne existe déjà.';
+          return;
+        }
+
+        let nextLines;
+        if (editingManagedLine) {
+          nextLines = currentLines.map((item) => String(item).trim().toLowerCase() === editingKey ? value : item);
+        } else {
+          nextLines = [...currentLines, value];
+        }
+
+        appLines = [...new Set(nextLines)].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+
+        if (!useFirebase) {
+          persistOwnedLines(appLines);
+          saveState();
+        } else {
+          if (editingManagedLine) {
+            const oldDocId = `${currentUser.id}_${editingManagedLine.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+            const newDocId = `${currentUser.id}_${value.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+            if (oldDocId !== newDocId) {
+              await db.collection('production_lines').doc(oldDocId).delete();
+            }
+          }
+          await db.collection('production_lines').doc(`${currentUser.id}_${value.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`).set({ name: value, user_id: currentUser.id });
+        }
+
+        const previousEditingLine = editingManagedLine;
+        editingManagedLine = '';
+        if (inputEl) inputEl.value = '';
+        await refreshDataAndRender();
+        navigateTo('admin');
+        if (statusEl) statusEl.textContent = previousEditingLine ? `Ligne modifiée: ${value}` : `Ligne ajoutée: ${value}`;
+      }
+
+      function startManagedLineEdit(line) {
+        editingManagedLine = line;
+        const inputEl = document.getElementById('managedLineInput');
+        const statusEl = document.getElementById('lineManageStatus');
+        const addButton = document.getElementById('managedLineAddButton');
+        const cancelButton = document.getElementById('managedLineCancelButton');
+        if (inputEl) {
+          inputEl.value = line;
+          inputEl.focus();
+        }
+        if (addButton) {
+          addButton.innerHTML = '<i class="bi bi-save2"></i>Enregistrer';
+        }
+        if (cancelButton) {
+          cancelButton.classList.remove('hidden');
+        }
+        if (statusEl) statusEl.textContent = `Modification de la ligne: ${line}`;
+      }
+
+      function cancelManagedLineEdit() {
+        editingManagedLine = '';
+        const inputEl = document.getElementById('managedLineInput');
+        const statusEl = document.getElementById('lineManageStatus');
+        const addButton = document.getElementById('managedLineAddButton');
+        const cancelButton = document.getElementById('managedLineCancelButton');
+        if (inputEl) inputEl.value = '';
+        if (addButton) {
+          addButton.innerHTML = '<i class="bi bi-plus-circle"></i>Ajouter';
+        }
+        if (cancelButton) {
+          cancelButton.classList.add('hidden');
+        }
+        if (statusEl) statusEl.textContent = '';
+      }
+
+      async function removeManagedLine(line) {
+        const statusEl = document.getElementById('lineManageStatus');
+        const currentLines = Array.isArray(appLines) ? appLines : [];
+        const nextLines = currentLines.filter((item) => String(item).trim().toLowerCase() !== String(line || '').trim().toLowerCase());
+        appLines = nextLines;
+
+        if (!useFirebase) {
+          persistOwnedLines(appLines);
+          saveState();
+        } else {
+          const docId = `${currentUser.id}_${String(line || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+          await db.collection('production_lines').doc(docId).delete();
+        }
+
+        await refreshDataAndRender();
+        navigateTo('admin');
+        if (statusEl) statusEl.textContent = `Ligne supprimée: ${line}`;
+      }
+
+      function renderAdmin() {
+        const visibleGammes = appGammes.filter((item) => currentUser.role === 'superadmin' || !item.user_id || item.user_id === currentUser.id);
+        const managedLines = getAvailableLines();
+        let html = `
+          <h2><i class="bi bi-sliders"></i> Parametres des listes</h2>
+          <hr class="panel-rule">
+          <h3>Import des temps de gamme (Excel)</h3>
+          <p class="entry-help">Colonnes attendues: Réf (colonne 1), TG (colonne 2). Colonne Ligne optionnelle.</p>
+          <input id="gammeFile" class="entry-input" type="file" accept=".xlsx,.xls">
+          <div class="d-flex flex-wrap gap-2 mt-2 mb-2">
+            <button type="button" onclick="importGammePreview()"><i class="bi bi-upload"></i>Importer</button>
+            <button type="button" onclick="saveImportedGammes()"><i class="bi bi-save2"></i>Enregistrer</button>
+          </div>
+          <div id="gammeImportStatus" class="entry-help"></div>
+          <h3 class="mt-3">Gestion des lignes</h3>
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+            <input id="managedLineInput" class="entry-input" type="text" placeholder="Nouvelle ligne" style="max-width:220px">
+            <button id="managedLineAddButton" type="button" onclick="addManagedLine()"><i class="bi bi-plus-circle"></i>Ajouter</button>
+            <button id="managedLineCancelButton" type="button" class="hidden" onclick="cancelManagedLineEdit()"><i class="bi bi-x-circle"></i>Annuler</button>
+          </div>
+          <div id="lineManageStatus" class="entry-help"></div>
+          <div class="table-wrap mt-2">
+            <table class="simple-table">
+              <thead><tr><th>Ligne</th><th>Action</th></tr></thead>
+              <tbody>
+                ${managedLines.length ? managedLines.map((line) => `<tr><td>${line}</td><td><button type="button" onclick="startManagedLineEdit('${String(line).replace(/'/g, "\\'")}')"><i class="bi bi-pencil"></i>Modifier</button> <button type="button" onclick="removeManagedLine('${String(line).replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i>Supprimer</button></td></tr>`).join('') : '<tr><td colspan="2">Aucune ligne enregistrée.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+          <h3 class="mt-3">Références importées</h3>
+        `;
+        if (!visibleGammes.length) {
+          html += '<p class="muted">Aucune référence importée.</p>';
+        } else {
+          html += '<div class="table-wrap"><table class="simple-table"><thead><tr><th>Réf</th><th>TG</th></tr></thead><tbody>';
+          visibleGammes.forEach((item) => {
+            html += `<tr><td>${item.reference || '-'}</td><td>${item.gamme_time || '-'} h</td></tr>`;
+          });
+          html += '</tbody></table></div>';
+        }
+        document.getElementById('adminContent').innerHTML = html;
+      }
+
+      function renderAddData() {
+        const lineOptions = getAvailableLines().map((line) => `<option value="${line}">${line}</option>`).join('');
+        entryReferenceRowCount = 0;
+        const html = `
+          <h2><i class="bi bi-pencil-square"></i> Saisie opérationnelle</h2>
+          <hr class="panel-rule">
+          <form onsubmit="event.preventDefault(); saveEfficiencyEntry();">
+            <div class="entry-form-grid">
+              <div class="entry-field">
+                <label class="field-label">Ligne</label>
+                <select id="entryLine" class="entry-select" onchange="updateEfficiencyPreview()">
+                  ${lineOptions}
+                </select>
+              </div>
+              <div class="entry-field">
+                <label class="field-label">Effectif</label>
+                <input id="entryEffectif" class="entry-input" type="number" min="1" step="1" oninput="updateEfficiencyPreview()" required>
+              </div>
+              <div class="entry-field">
+                <label class="field-label">RFC (%)</label>
+                <input id="entryRfc" class="entry-input" type="number" min="0" step="0.01" oninput="updateEfficiencyPreview()" required>
+              </div>
+              <div class="entry-field">
+                <label class="field-label">Date</label>
+                <input id="entryDate" class="entry-input" type="date" value="${getTodayKey()}">
+              </div>
+            </div>
+
+            <div class="result-box mt-2">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <label class="field-label mb-0">Références et quantités produites</label>
+                <button type="button" onclick="addReferenceItemRow()"><i class="bi bi-plus-circle"></i>Ajouter référence</button>
+              </div>
+              <div id="entryReferenceRows"></div>
+            </div>
+
+            <div class="entry-form-grid mt-2">
+              <div class="entry-field result-box">
+                <label class="field-label">Temps travaillé</label>
+                <input id="entryWorkingTime" class="entry-input" type="text" value="8 h" readonly>
+              </div>
+              <div class="entry-field result-box">
+                <label class="field-label">Efficiency (%)</label>
+                <input id="entryEfficiency" class="entry-input" type="text" readonly>
+              </div>
+            </div>
+
+            <div id="efficiencyCompareStatus" class="status-chip status-good"><i class="bi bi-check-circle"></i>RFC inférieur ou égal à l'efficience (Vert)</div>
+            <button type="submit"><i class="bi bi-check2-circle"></i>Enregistrer la saisie</button>
+            <div id="entryStatus" class="entry-help mt-2"></div>
+          </form>
+        `;
+        document.getElementById('addDataContent').innerHTML = html;
+        addReferenceItemRow();
+        updateEfficiencyPreview();
+      }
+
+      function createReferenceItemRowHtml(rowId, reference = '', quantity = '') {
+        return `
+          <div class="entry-form-grid reference-item-row mb-2" data-row-id="${rowId}">
+            <div class="entry-field">
+              <label class="field-label">Référence</label>
+              <input class="entry-input reference-item-input" type="text" value="${reference}" oninput="updateEfficiencyPreview()" required>
+            </div>
+            <div class="entry-field">
+              <label class="field-label">Quantité produite</label>
+              <input class="entry-input quantity-item-input" type="number" min="0" step="1" value="${quantity}" oninput="updateEfficiencyPreview()" required>
+            </div>
+            <div class="entry-field d-flex align-items-end">
+              <button type="button" onclick="removeReferenceItemRow(${rowId})"><i class="bi bi-trash"></i>Supprimer</button>
+            </div>
+          </div>
+        `;
+      }
+
+      function addReferenceItemRow(reference = '', quantity = '') {
+        const rowsEl = document.getElementById('entryReferenceRows');
+        if (!rowsEl) return;
+        entryReferenceRowCount += 1;
+        rowsEl.insertAdjacentHTML('beforeend', createReferenceItemRowHtml(entryReferenceRowCount, reference, quantity));
+        updateEfficiencyPreview();
+      }
+
+      function removeReferenceItemRow(rowId) {
+        const rowsEl = document.getElementById('entryReferenceRows');
+        if (!rowsEl) return;
+        const rows = rowsEl.querySelectorAll('.reference-item-row');
+        if (rows.length <= 1) return;
+        const target = rowsEl.querySelector(`[data-row-id="${rowId}"]`);
+        if (target) {
+          target.remove();
+        }
+        updateEfficiencyPreview();
+      }
+
+      function getReferenceItemValues() {
+        const rows = Array.from(document.querySelectorAll('#entryReferenceRows .reference-item-row'));
+        return rows.map((row) => ({
+          reference: String(row.querySelector('.reference-item-input')?.value || '').trim(),
+          quantity: Number(row.querySelector('.quantity-item-input')?.value || 0)
+        }));
+      }
+
+      function updateEfficiencyPreview() {
+        const lineEl = document.getElementById('entryLine');
+        const effectifEl = document.getElementById('entryEffectif');
+        const rfcEl = document.getElementById('entryRfc');
+        const efficiencyEl = document.getElementById('entryEfficiency');
+        const compareEl = document.getElementById('efficiencyCompareStatus');
+
+        if (!lineEl || !effectifEl || !rfcEl || !efficiencyEl || !compareEl) return;
+
+        const items = getReferenceItemValues();
+        let totalQuantity = 0;
+        let weightedOutput = 0;
+        let linkedCount = 0;
+        let missingCount = 0;
+        const weightedParts = [];
+
+        items.forEach((item) => {
+          if (!item.reference) return;
+          const gammeRow = findGammeByReference(item.reference, lineEl.value);
+          const gammeTime = gammeRow ? Number(gammeRow.gamme_time) : NaN;
+          const quantity = Number(item.quantity || 0);
+          totalQuantity += Number.isFinite(quantity) ? quantity : 0;
+          if (Number.isFinite(gammeTime)) {
+            weightedOutput += quantity * gammeTime;
+            linkedCount += 1;
+            weightedParts.push(`${gammeTime.toFixed(3)} x ${quantity}`);
+          } else {
+            missingCount += 1;
+          }
+        });
+
+        const effectif = Number(effectifEl.value);
+        const rfc = Number(rfcEl.value);
+        const efficiency = effectif > 0 ? (weightedOutput / (effectif * WORKING_HOURS)) * 100 : 0;
+
+        efficiencyEl.value = `${efficiency.toFixed(2)} %`;
+
+        const ecart = calculateEcart(efficiency, rfc);
+
+        if (ecart < 0) {
+          compareEl.className = 'status-chip status-bad';
+          compareEl.innerHTML = `<i class="bi bi-x-circle"></i>Écart ${ecart.toFixed(2)}% (Rouge)`;
+        } else {
+          compareEl.className = 'status-chip status-good';
+          compareEl.innerHTML = `<i class="bi bi-check-circle"></i>Écart +${ecart.toFixed(2)}% (Vert)`;
+        }
+      }
+
+      async function saveEfficiencyEntry() {
+        const line = document.getElementById('entryLine').value;
+        const effectif = Number(document.getElementById('entryEffectif').value);
+        const rfc = Number(document.getElementById('entryRfc').value);
+        const entryDate = document.getElementById('entryDate').value || getTodayKey();
+        const statusEl = document.getElementById('entryStatus');
+
+        const items = getReferenceItemValues().filter((item) => item.reference);
+        if (!items.length) {
+          statusEl.textContent = 'Ajoute au moins une référence.';
+          return;
+        }
+
+        if (!effectif || effectif <= 0 || !Number.isFinite(rfc) || rfc < 0) {
+          statusEl.textContent = 'Vérifiez les valeurs Effectif, Quantité et RFC.';
+          return;
+        }
+
+        let totalQuantity = 0;
+        let weightedOutput = 0;
+        const itemDetails = [];
+        for (const item of items) {
+          if (!Number.isFinite(item.quantity) || item.quantity < 0) {
+            statusEl.textContent = 'Chaque quantité produite doit être valide.';
+            return;
+          }
+          const gammeRow = findGammeByReference(item.reference, line);
+          if (!gammeRow) {
+            statusEl.textContent = `Référence non trouvée: ${item.reference}`;
+            return;
+          }
+          const gammeTime = Number(gammeRow.gamme_time);
+          totalQuantity += item.quantity;
+          weightedOutput += item.quantity * gammeTime;
+          itemDetails.push({
+            reference: item.reference,
+            quantity: item.quantity,
+            gamme_time: gammeTime
+          });
+        }
+
+        const gammeTime = totalQuantity > 0 ? weightedOutput / totalQuantity : 0;
+        const efficiency = effectif > 0 ? (weightedOutput / (effectif * WORKING_HOURS)) * 100 : 0;
+        const ecart = calculateEcart(efficiency, rfc);
+
+        const payload = {
+          user_id: currentUser.id,
+          line,
+          reference: itemDetails.map((item) => item.reference).join(', '),
+          effectif,
+          quantity: totalQuantity,
+          gamme_time: gammeTime,
+          reference_items: itemDetails,
+          weighted_output: Number(weightedOutput.toFixed(4)),
+          rfc,
+          working_hours: WORKING_HOURS,
+          efficiency,
+          ecart,
+          entry_date: entryDate,
+          created_at: new Date().toISOString()
+        };
+
+        if (!useFirebase) {
+          demoState.entries.push({ id: `e${Date.now()}`, ...payload });
+          saveState();
+        } else {
+          await db.collection('entries').add(payload);
+        }
+
+        await refreshDataAndRender();
+        navigateTo('add-data');
+        const refreshedStatus = document.getElementById('entryStatus');
+        if (refreshedStatus) {
+          refreshedStatus.textContent = `Saisie enregistrée. Efficience: ${efficiency.toFixed(2)} %`;
+        }
+      }
+
+      async function importGammePreview() {
+        const statusEl = document.getElementById('gammeImportStatus');
+        const fileInput = document.getElementById('gammeFile');
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (!file) return;
+
+        if (typeof XLSX === 'undefined') {
+          if (statusEl) statusEl.textContent = 'Librairie Excel non chargée.';
+          return;
+        }
+
+        try {
+          const buffer = await file.arrayBuffer();
+          const workbook = XLSX.read(buffer, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+          if (!rows.length) {
+            if (statusEl) statusEl.textContent = 'Fichier vide.';
+            return;
+          }
+
+          const headers = rows[0].map((header) => normalizeHeader(header));
+          const refIndex = headers.findIndex((h) => ['reference', 'ref', 'article'].includes(h));
+          const lineIndex = headers.findIndex((h) => ['ligne', 'line', 'lignes'].includes(h));
+          const gammeIndex = headers.findIndex((h) => ['tg', 'tempsdegamme', 'gamme', 'tempsgamme', 'cycle', 'cycletime'].includes(h));
+
+          if (refIndex === -1 || gammeIndex === -1) {
+            if (statusEl) statusEl.textContent = 'Colonnes introuvables. Utilisez reference et temps de gamme.';
+            return;
+          }
+
+          const imported = rows.slice(1)
+            .map((row) => {
+              const reference = String(row[refIndex] || '').trim();
+              const gammeTime = toNumber(row[gammeIndex]);
+              const line = String(row[lineIndex] || 'Ligne 1').trim() || 'Ligne 1';
+              if (!reference || !Number.isFinite(gammeTime) || gammeTime <= 0) return null;
+              return { line, reference, gamme_time: gammeTime, user_id: currentUser.id };
+            })
+            .filter(Boolean);
+
+          if (!imported.length) {
+            if (statusEl) statusEl.textContent = 'Aucune ligne valide importée.';
+            return;
+          }
+
+          pendingGammes = imported;
+          const importedLines = imported.map((item) => String(item.line || '').trim()).filter(Boolean);
+          appLines = [...new Set([...(Array.isArray(appLines) ? appLines : []), ...importedLines])].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+          if (!useFirebase) {
+            persistOwnedLines(appLines);
+            saveState();
+          }
+          if (statusEl) statusEl.textContent = `${imported.length} référence(s) prêtes. Cliquez sur Enregistrer.`;
+        } catch (error) {
+          if (statusEl) statusEl.textContent = `Erreur import: ${error.message}`;
+        }
+      }
+
+      async function saveImportedGammes() {
+        const statusEl = document.getElementById('gammeImportStatus');
+        if (!pendingGammes.length) {
+          if (statusEl) statusEl.textContent = 'Aucune donnée importée. Cliquez d\'abord sur Importer.';
+          return;
+        }
+
+        if (!useFirebase) {
+          const merged = new Map((demoState.gammes || []).map((item) => [buildOwnedGammeKey(item.user_id, item.line, item.reference), item]));
+          pendingGammes.forEach((item) => {
+            merged.set(buildOwnedGammeKey(item.user_id, item.line, item.reference), {
+              id: `g${Date.now()}${Math.random().toString(16).slice(2, 8)}`,
+              ...item
+            });
+          });
+          demoState.gammes = Array.from(merged.values());
+          const importedLines = pendingGammes.map((item) => String(item.line || '').trim()).filter(Boolean);
+          persistOwnedLines([...new Set([...(Array.isArray(appLines) ? appLines : []), ...importedLines])].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' })));
+          saveState();
+        } else {
+          const writes = pendingGammes.map((item) => {
+            const docId = buildOwnedGammeKey(item.user_id, item.line, item.reference).replace(/[^a-z0-9_]/g, '_');
+            return db.collection('gammes').doc(docId).set(item, { merge: true });
+          });
+          await Promise.all(writes);
+
+          const importedLines = [...new Set(pendingGammes.map((item) => String(item.line || '').trim()).filter(Boolean))];
+          await Promise.all(importedLines.map((line) => {
+            const docId = `${currentUser.id}_${line.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+            return db.collection('production_lines').doc(docId).set({ name: line, user_id: currentUser.id });
+          }));
+        }
+
+        const savedCount = pendingGammes.length;
+        pendingGammes = [];
+        await refreshDataAndRender();
+        navigateTo('admin');
+        const refreshedStatus = document.getElementById('gammeImportStatus');
+        if (refreshedStatus) refreshedStatus.textContent = `${savedCount} référence(s) enregistrée(s).`;
+      }
+
+      function renderSuperAdmin() {
+        if (currentUser.role !== 'superadmin') return;
+        const totalUsers = useFirebase ? '-' : demoState.users.length;
+        const totalOptions = appDropdowns.length;
+        const totalEntries = appEntries.length;
+        document.getElementById('superAdminContent').innerHTML = `
+          <div class="grid">
+            <div class="card"><strong>Utilisateurs</strong><p>${totalUsers}</p></div>
+            <div class="card"><strong>Options</strong><p>${totalOptions}</p></div>
+            <div class="card"><strong>Entrées</strong><p>${totalEntries}</p></div>
+          </div>
+        `;
+      }
+
+      function authenticateDemo(login, password) {
+        const normalizedLogin = String(login || '').trim().toLowerCase();
+        const account = DEMO_ACCOUNTS.find((item) => item.login.toLowerCase() === normalizedLogin && item.password === password);
+        if (!account) return null;
+        return { id: account.id, login: account.login, email: account.email, role: account.role };
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const loginInput = document.getElementById('login').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!useFirebase) {
+          const user = authenticateDemo(loginInput, password);
+          if (!user) {
+            document.getElementById('loginError').textContent = 'Identifiants invalides.';
+            return;
+          }
+          document.getElementById('loginError').textContent = '';
+          localStorage.setItem('efficiency-user', JSON.stringify(user));
+          loginUser(user);
+          return;
+        }
+
+        try {
+          const result = await auth.signInWithEmailAndPassword(loginInput, password);
+          const userDoc = await db.collection('users').doc(result.user.uid).get();
+          const userData = userDoc.exists ? userDoc.data() : { role: 'user' };
+          const user = { id: result.user.uid, login: result.user.email, email: result.user.email, role: userData.role || 'user' };
+          document.getElementById('loginError').textContent = '';
+          localStorage.setItem('efficiency-user', JSON.stringify(user));
+          loginUser(user);
+        } catch (error) {
+          document.getElementById('loginError').textContent = error.message;
+        }
+      });
+
+      window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        initFirebaseIfPossible();
+        navigationCollapsed = true;
+        localStorage.setItem('efficiency_nav_collapsed', '1');
+        const savedUser = localStorage.getItem('efficiency-user');
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+          setAuthArea();
+          showApp();
+        } else {
+          setAuthArea();
+          showLogin();
+        }
+      });
+    </script>
+  </body>
+</html>
