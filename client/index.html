@@ -2425,17 +2425,8 @@
       }
 
       function renderSuperAdmin() {
-        if (currentUser.role !== 'superadmin') return;
-        const totalUsers = useFirebase ? '-' : demoState.users.length;
-        const totalOptions = appDropdowns.length;
-        const totalEntries = appEntries.length;
-        document.getElementById('superAdminContent').innerHTML = `
-          <div class="grid">
-            <div class="card"><strong>Utilisateurs</strong><p>${totalUsers}</p></div>
-            <div class="card"><strong>Options</strong><p>${totalOptions}</p></div>
-            <div class="card"><strong>Entrées</strong><p>${totalEntries}</p></div>
-          </div>
-        `;
+        const panel = document.getElementById('superAdminPanel');
+        if (panel) panel.classList.add('hidden');
       }
 
       function authenticateDemo(login, password) {
