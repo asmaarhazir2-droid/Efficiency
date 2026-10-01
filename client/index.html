@@ -2507,8 +2507,7 @@
                     }
 
                     const projectLabel = context.label;
-                    const value = Number(context.parsed?.y ?? context.raw ?? 0);
-                    return `${projectLabel} + Efficiency: ${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`;
+                    return `${projectLabel} + Efficiency`;
                   },
                   afterBody(items) {
                     if (currentUser.role !== 'superadmin' || getDashboardOwnerId() !== 'all' || !items.length) return [];
