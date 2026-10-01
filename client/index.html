@@ -2240,6 +2240,7 @@
         let colors = [];
         let borders = [];
         let projectLineValues = null;
+        const projectLineEfficiencies = new Map();
 
         if (currentUser.role === 'superadmin' && getDashboardOwnerId() !== 'all') {
           const efficiency = Number(globalEfficiency.toFixed(2));
@@ -2286,8 +2287,23 @@
           const accountMetrics = Array.from(byUser.entries()).map(([ownerId, data]) => {
             const hours = data.effectifTotal * WORKING_HOURS;
             const efficiency = hours > 0 ? (data.weightedOutput / hours) * 100 : 0;
+            const lines = new Map();
+            filtered.filter((entry) => (entry.user_id || entry.userId) === ownerId).forEach((entry) => {
+              const line = entry.line || entry.ligne || entry.line_name || entry.lineName || 'Sans ligne';
+              const lineData = lines.get(line) || { effectifTotal: 0, weightedOutput: 0 };
+              lineData.effectifTotal += Number(entry.effectif || 0);
+              lineData.weightedOutput += Number(entry.quantity || 0) * Number(entry.gamme_time || 0);
+              lines.set(line, lineData);
+            });
+            const lineMetrics = Array.from(lines.entries()).map(([line, lineData]) => {
+              const lineHours = lineData.effectifTotal * WORKING_HOURS;
+              const lineEfficiency = lineHours > 0 ? (lineData.weightedOutput / lineHours) * 100 : 0;
+              return { line, efficiency: lineEfficiency };
+            }).sort((a, b) => b.efficiency - a.efficiency);
+            const label = getUserLabelById(ownerId);
+            projectLineEfficiencies.set(label, lineMetrics);
             return {
-              label: getUserLabelById(ownerId),
+              label,
               value: Number(efficiency.toFixed(2))
             };
           }).sort((a, b) => b.value - a.value);
@@ -2418,7 +2434,20 @@
               }
             },
             plugins: {
-              legend: { display: true }
+              legend: { display: true },
+              tooltip: {
+                callbacks: {
+                  afterBody(items) {
+                    if (currentUser.role !== 'superadmin' || getDashboardOwnerId() !== 'all' || !items.length) return [];
+                    const lineMetrics = projectLineEfficiencies.get(items[0].label) || [];
+                    if (!lineMetrics.length) return ['Aucune ligne saisie pour ce projet à cette date.'];
+                    return [
+                      'Efficience par ligne :',
+                      ...lineMetrics.map((item) => `${item.line} : ${item.efficiency.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`)
+                    ];
+                  }
+                }
+              }
             }
           }
         });
