@@ -1591,7 +1591,7 @@
       <div id="appView" class="hidden">
         <header class="workspace-topbar">
           <h1 class="workspace-title"><span class="workspace-title-icon"><i class="bi bi-clipboard-data" aria-hidden="true"></i></span> Efficiency tracking</h1>
-          <span class="workspace-center-label">Efficiency</span>
+          <span id="workspaceCenterLabel" class="workspace-center-label">Efficiency</span>
           <div id="workspaceDate" class="workspace-date"></div>
         </header>
 
@@ -2119,6 +2119,17 @@
         const userEntries = getDashboardEntries();
         if (currentUser.role === 'superadmin' && !dashboardSelectedUserId) {
           dashboardSelectedUserId = 'all';
+        }
+        const headerLabel = document.getElementById('workspaceCenterLabel');
+        if (headerLabel) {
+          let projectLabel = '';
+          if (currentUser.role === 'superadmin') {
+            projectLabel = getDashboardOwnerId() === 'all' ? 'Tous les projets' : getUserLabelById(getDashboardOwnerId());
+          } else {
+            const project = DASHBOARD_PROJECTS.find((item) => item.email.toLowerCase() === String(currentUser.email || '').toLowerCase());
+            projectLabel = project?.label || currentUser.email?.split('@')[0] || '';
+          }
+          headerLabel.textContent = `${projectLabel} + Efficiency`;
         }
 
         const availableDates = getAvailableEntryDates();
