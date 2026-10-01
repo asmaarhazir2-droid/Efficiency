@@ -2352,17 +2352,6 @@
         const aggregate = new Map();
         const rankingByProject = currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all';
 
-        if (rankingByProject) {
-          getDashboardSelectableUsers().forEach((user) => {
-            aggregate.set(user.id, {
-              label: user.login,
-              effectifTotal: 0,
-              weightedOutput: 0,
-              count: 0
-            });
-          });
-        }
-
         sourceEntries.forEach((item) => {
           const ownerId = item.user_id || item.userId;
           const key = rankingByProject
