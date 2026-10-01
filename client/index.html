@@ -586,7 +586,7 @@
 
       .dashboard-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 290px;
+        grid-template-columns: minmax(0, 1fr) 340px;
         gap: 16px;
         align-items: start;
       }
@@ -599,7 +599,7 @@
       .dashboard-ranking-column {
         position: sticky;
         top: 16px;
-        min-width: 280px;
+        min-width: 340px;
       }
 
       .dashboard-ranking-column .nav-ranking-panel {
@@ -607,9 +607,9 @@
       }
 
       .dashboard-ranking-column .nav-ranking-list {
-        max-height: calc(100vh - 230px);
-        overflow-y: auto;
-        padding-right: 4px;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
       }
 
       .dashboard-summary-grid {
@@ -716,121 +716,337 @@
       }
 
       .nav-ranking-panel {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #d7deea;
+        margin: 0;
+        padding: 16px;
+        border: 0.5px solid #e2e8f0;
+        border-radius: 16px;
+        background: #ffffff;
+        color: #0b2a5b;
+        box-shadow: none;
       }
 
       .nav-ranking-header {
         display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .ranking-title-line {
+        display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
+        gap: 8px;
       }
 
       .nav-ranking-header h4 {
         margin: 0;
-        font-size: 0.98rem;
-        color: #0f3567;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0b2a5b;
+      }
+
+      .nav-ranking-header h4 i {
+        color: #b45309;
+        font-size: 1rem;
+      }
+
+      .ranking-panel-date {
+        color: #64748b;
+        font-size: 0.7rem;
+        font-weight: 500;
+        white-space: nowrap;
       }
 
       .ranking-mode-toggle {
         display: inline-flex;
-        gap: 6px;
+        align-self: flex-start;
+        gap: 3px;
         padding: 3px;
-        border-radius: 999px;
-        background: #eef3fb;
-        border: 1px solid #d7e0ef;
+        border: 0;
+        border-radius: 9px;
+        background: #f1f5f9;
       }
 
-      .ranking-mode-btn {
+      .nav-ranking-panel .ranking-mode-btn {
         border: none;
-        border-radius: 999px;
-        padding: 5px 8px;
-        font-size: 0.72rem;
-        font-weight: 800;
-        color: #4b6281;
+        border-radius: 7px;
+        padding: 7px 12px;
+        font-size: 0.76rem;
+        font-weight: 650;
+        color: #64748b;
         background: transparent;
+        box-shadow: none;
+        cursor: pointer;
       }
 
-      .ranking-mode-btn.active {
-        background: #0d3260;
+      .nav-ranking-panel .ranking-mode-btn.active {
+        background: #0b2a5b;
         color: #ffffff;
+        box-shadow: none;
+      }
+
+      .nav-ranking-panel .ranking-mode-btn:hover,
+      .nav-ranking-panel .ranking-mode-btn:active {
+        transform: none;
+        box-shadow: none;
       }
 
       .nav-ranking-list {
-        display: grid;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .ranking-champion {
+        padding: 12px;
+        border: 1px solid #fcd34d;
+        border-radius: 12px;
+        background: #fffbeb;
+      }
+
+      .ranking-champion-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: 8px;
       }
 
-      .nav-ranking-item {
-        border-radius: 14px;
-        padding: 10px 12px;
-        background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-        border: 1px solid #dbe5f2;
-        box-shadow: 0 8px 18px rgba(15, 53, 103, 0.08);
+      .ranking-champion-person {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 9px;
       }
 
-      .nav-ranking-item.top-1 {
-        border-color: rgba(255, 193, 7, 0.45);
-        background: linear-gradient(180deg, #fff8e4 0%, #fff2c4 100%);
+      .ranking-champion-medal {
+        display: grid;
+        flex: 0 0 30px;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 50%;
+        background: #fde68a;
+        color: #92400e;
+        font-size: 0.9rem;
+      }
+
+      .ranking-champion-name {
+        overflow: hidden;
+        color: #0b2a5b;
+        font-size: 0.86rem;
+        font-weight: 650;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .ranking-champion-subtitle {
+        margin-top: 2px;
+        color: #64748b;
+        font-size: 0.68rem;
+      }
+
+      .ranking-champion-value {
+        color: #15803d;
+        font-size: 1.12rem;
+        font-weight: 750;
+        letter-spacing: -0.03em;
+        white-space: nowrap;
+      }
+
+      .ranking-progress-track {
+        position: relative;
+        height: 8px;
+        margin-top: 13px;
+        overflow: visible;
+        border-radius: 999px;
+        background: #e2e8f0;
+      }
+
+      .ranking-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: #15803d;
+      }
+
+      .ranking-progress-fill.below-target {
+        background: #d97706;
+      }
+
+      .ranking-rfc-marker {
+        position: absolute;
+        z-index: 1;
+        top: -4px;
+        bottom: -4px;
+        left: var(--ranking-target);
+        border-left: 2px dashed #0b2a5b;
+      }
+
+      .ranking-champion-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-top: 9px;
+      }
+
+      .ranking-target-label {
+        color: #64748b;
+        font-size: 0.66rem;
+      }
+
+      .ranking-gap-pill {
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 0.64rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .ranking-gap-pill.below-target {
+        background: #fef3c7;
+        color: #b45309;
+      }
+
+      .nav-ranking-item {
+        padding: 10px 2px;
+        border-bottom: 1px solid #e2e8f0;
+        background: transparent;
       }
 
       .nav-ranking-item.top-2 {
-        border-color: rgba(182, 190, 204, 0.8);
-        background: linear-gradient(180deg, #f8f9fb 0%, #eef1f6 100%);
+        border-color: #e2e8f0;
       }
 
       .nav-ranking-item.top-3 {
-        border-color: rgba(205, 127, 50, 0.45);
-        background: linear-gradient(180deg, #fff3e8 0%, #ffe7d2 100%);
+        border-color: #e2e8f0;
       }
 
       .nav-ranking-line {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-weight: 800;
-        color: #0f3567;
-        margin-bottom: 4px;
+        margin-bottom: 7px;
+        color: #0b2a5b;
+        font-size: 0.78rem;
+        font-weight: 600;
       }
 
       .nav-ranking-medal {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
         border-radius: 999px;
-        color: #ffffff;
-        font-size: 0.9rem;
-        background: #0d3260;
+        color: #334155;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: #e2e8f0;
       }
 
       .nav-ranking-item.top-1 .nav-ranking-medal {
-        background: #f0b400;
+        background: #fde68a;
+        color: #92400e;
       }
 
       .nav-ranking-item.top-2 .nav-ranking-medal {
-        background: #8f9cb1;
+        background: #e2e8f0;
+        color: #475569;
       }
 
       .nav-ranking-item.top-3 .nav-ranking-medal {
-        background: #c67c3d;
+        background: #fed7aa;
+        color: #9a3412;
       }
 
-      .nav-ranking-meta {
-        margin: 0;
-        color: #506582;
-        font-size: 0.86rem;
+      .ranking-row-value {
+        margin-left: auto;
+        color: #15803d;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .ranking-row-detail {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding-left: 32px;
+      }
+
+      .ranking-row-track {
+        height: 5px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e2e8f0;
+      }
+
+      .ranking-row-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: #15803d;
+      }
+
+      .ranking-row-fill.below-target {
+        background: #d97706;
+      }
+
+      .ranking-row-delta {
+        color: #15803d;
+        font-size: 0.66rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .ranking-row-delta.below-target {
+        color: #b45309;
+      }
+
+      .ranking-panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 11px;
+        border-top: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.68rem;
+      }
+
+      .ranking-panel-footer-summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .ranking-panel-footer-summary i {
+        color: #15803d;
+        font-size: 0.75rem;
+      }
+
+      .ranking-panel-footer-label {
+        white-space: nowrap;
       }
 
       .dashboard-ranking-empty {
-        color: #6a7f99;
-        font-size: 0.92rem;
-        margin: 0;
+        margin: 6px 0;
+        color: #64748b;
+        font-size: 0.78rem;
+      }
+
+      @media (max-width: 720px) {
+        .dashboard-ranking-column {
+          min-width: 0;
+        }
       }
 
       .chart-canvas {
@@ -1857,10 +2073,13 @@
             <aside class="dashboard-ranking-column">
               <div class="nav-ranking-panel">
                 <div class="nav-ranking-header">
-                  <h4><i class="bi bi-trophy-fill"></i> Ranking challenge</h4>
+                  <div class="ranking-title-line">
+                    <h4><i class="bi bi-trophy-fill"></i> Ranking challenge</h4>
+                    <span id="dashboardRankingDate" class="ranking-panel-date">${formatDateLabel(defaultDate)}</span>
+                  </div>
                   <div class="ranking-mode-toggle" aria-label="Mode de classement">
-                    <button id="rankingModeEfficiency" class="ranking-mode-btn active" type="button" onclick="setRankingMode('efficiency')">Efficiency</button>
-                    <button id="rankingModeEcart" class="ranking-mode-btn" type="button" onclick="setRankingMode('ecart')">Ecart RFC</button>
+                    <button id="rankingModeEfficiency" class="ranking-mode-btn ${dashboardRankingMode === 'efficiency' ? 'active' : ''}" type="button" onclick="setRankingMode('efficiency')">Efficiency</button>
+                    <button id="rankingModeEcart" class="ranking-mode-btn ${dashboardRankingMode === 'ecart' ? 'active' : ''}" type="button" onclick="setRankingMode('ecart')">Écart RFC</button>
                   </div>
                 </div>
                 <div id="dashboardRankingContent" class="nav-ranking-list"></div>
@@ -2148,116 +2367,124 @@
         const rankingEl = document.getElementById('dashboardRankingContent');
         if (!rankingEl) return;
 
+        const dateLabel = document.getElementById('dashboardRankingDate');
+        if (dateLabel) dateLabel.textContent = formatDateLabel(dashboardSelectedDate || getTodayKey());
+
         const configuredUserIds = new Set(getDashboardSelectableUsers().filter((user) => !user.unavailable).map((user) => user.id));
         const sourceEntries = filteredEntries.filter((item) => currentUser.role === 'superadmin'
           ? configuredUserIds.has(item.user_id || item.userId)
           : item.user_id === currentUser.id || item.userId === currentUser.id);
+        const rfcInput = document.getElementById('dashboardRfcFilter');
+        const targetRfc = Number.isFinite(Number(rfcInput?.value)) ? Number(rfcInput.value) : 80;
+        const aggregate = new Map();
+        const rankingByProject = currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all';
 
-        if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
-          const byUser = new Map();
-          sourceEntries.forEach((item) => {
-            const ownerId = item.user_id || item.userId;
-            if (!ownerId) return;
-            const existing = byUser.get(ownerId) || { effectifTotal: 0, weightedOutput: 0, rfcSum: 0, count: 0 };
-            existing.effectifTotal += Number(item.effectif || 0);
-            existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
-            existing.rfcSum += Number(item.rfc || 0);
-            existing.count += 1;
-            byUser.set(ownerId, existing);
-          });
-
-          const rankingByUser = Array.from(byUser.entries()).map(([ownerId, data]) => {
-            const hours = data.effectifTotal * WORKING_HOURS;
-            const avgEfficiency = hours > 0 ? (data.weightedOutput / hours) * 100 : 0;
-            const avgRfc = data.count ? data.rfcSum / data.count : 0;
-            const ecart = avgEfficiency - avgRfc;
-            return { line: getUserLabelById(ownerId), avgEfficiency, avgRfc, ecart, count: data.count };
-          }).sort((a, b) => {
-            if (dashboardRankingMode === 'ecart') {
-              if (b.ecart !== a.ecart) return b.ecart - a.ecart;
-              if (b.avgEfficiency !== a.avgEfficiency) return b.avgEfficiency - a.avgEfficiency;
-            } else if (b.avgEfficiency !== a.avgEfficiency) {
-              return b.avgEfficiency - a.avgEfficiency;
-            }
-            return a.line.localeCompare(b.line, 'fr', { sensitivity: 'base' });
-          }).slice(0, 5);
-
-          if (!rankingByUser.length) {
-            rankingEl.innerHTML = '<p class="dashboard-ranking-empty">Aucun projet saisi pour cette date.</p>';
-            return;
-          }
-
-          const medals = ['🥇', '🥈', '🥉'];
-          rankingEl.innerHTML = rankingByUser.map((item, index) => {
-            const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
-            const rankLabel = medals[index] || `${index + 1}`;
-            const ecartLabel = `${item.ecart >= 0 ? '+' : ''}${item.ecart.toFixed(2)}%`;
-            const ecartClass = item.ecart >= 0 ? 'ranking-good' : 'ranking-bad';
-            return `
-              <div class="nav-ranking-item ${topClass}">
-                <div class="nav-ranking-line">
-                  <span class="nav-ranking-medal">${rankLabel}</span>
-                  <span>${item.line}</span>
-                </div>
-                <p class="nav-ranking-meta">Efficience: ${item.avgEfficiency.toFixed(2)}% | RFC: ${item.avgRfc.toFixed(2)}%</p>
-                <p class="nav-ranking-meta ${ecartClass}">Écart ${ecartLabel} | ${item.count} saisie(s)</p>
-              </div>
-            `;
-          }).join('');
-          return;
-        }
-
-        const byLine = new Map();
         sourceEntries.forEach((item) => {
-          const line = item.line || item.ligne || item.line_name || item.lineName || 'Sans ligne';
-          const existing = byLine.get(line) || { effectifTotal: 0, weightedOutput: 0, rfcSum: 0, count: 0 };
-          existing.effectifTotal += Number(item.effectif || 0);
-          existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
-          existing.rfcSum += Number(item.rfc || 0);
-          existing.count += 1;
-          byLine.set(line, existing);
+          const ownerId = item.user_id || item.userId;
+          const key = rankingByProject
+            ? ownerId
+            : (item.line || item.ligne || item.line_name || item.lineName || 'Sans ligne');
+          if (!key) return;
+
+          const current = aggregate.get(key) || {
+            label: rankingByProject ? getUserLabelById(key) : key,
+            effectifTotal: 0,
+            weightedOutput: 0,
+            count: 0
+          };
+          current.effectifTotal += Number(item.effectif || 0);
+          current.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
+          current.count += 1;
+          aggregate.set(key, current);
         });
 
-        const ranking = Array.from(byLine.entries()).map(([line, data]) => {
-          const hours = Number(data.effectifTotal || 0) * WORKING_HOURS;
-          const avgEfficiency = hours > 0 ? (Number(data.weightedOutput || 0) / hours) * 100 : 0;
-          const avgRfc = data.count ? data.rfcSum / data.count : 0;
-          const ecart = avgEfficiency - avgRfc;
-          return { line, avgEfficiency, avgRfc, ecart, count: data.count };
-        })
-          .sort((a, b) => {
-            if (dashboardRankingMode === 'ecart') {
-              if (b.ecart !== a.ecart) return b.ecart - a.ecart;
-              if (b.avgEfficiency !== a.avgEfficiency) return b.avgEfficiency - a.avgEfficiency;
-            } else if (b.avgEfficiency !== a.avgEfficiency) {
-              return b.avgEfficiency - a.avgEfficiency;
-            }
-            return a.line.localeCompare(b.line, 'fr', { sensitivity: 'base' });
-          })
-          .slice(0, 5);
+        const ranking = Array.from(aggregate.values()).map((item) => {
+          const availableHours = item.effectifTotal * WORKING_HOURS;
+          const efficiency = availableHours > 0 ? (item.weightedOutput / availableHours) * 100 : 0;
+          return { ...item, efficiency, gap: efficiency - targetRfc };
+        }).sort((a, b) => {
+          if (dashboardRankingMode === 'ecart' && b.gap !== a.gap) return b.gap - a.gap;
+          if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
+          return a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
+        }).slice(0, 3);
 
-        if (!ranking.length) {
-          rankingEl.innerHTML = '<p class="dashboard-ranking-empty">Aucune ligne saisie pour cette date.</p>';
-          return;
+        const formatNumber = (value, digits = 1) => Number(value || 0).toLocaleString('fr-FR', {
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits
+        });
+        const formatGap = (value, digits = 2) => `${value > 0 ? '+' : ''}${formatNumber(value, digits)}`;
+        const escapeText = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[character]);
+        const targetLabel = formatNumber(targetRfc, 0);
+        const markerPosition = Math.max(0, Math.min(100, (targetRfc / 120) * 100));
+        let html = '';
+
+        if (ranking.length) {
+          const champion = ranking[0];
+          const championGapClass = champion.gap < 0 ? 'below-target' : '';
+          const championProgress = Math.max(0, Math.min(100, (champion.efficiency / 120) * 100));
+          const championPlace = champion.count === 1 ? '1re place · 1 saisie' : `1re place · ${champion.count} saisies`;
+          html += `
+            <article class="ranking-champion">
+              <div class="ranking-champion-head">
+                <div class="ranking-champion-person">
+                  <span class="ranking-champion-medal"><i class="bi bi-award-fill" aria-hidden="true"></i></span>
+                  <div>
+                    <div class="ranking-champion-name">${escapeText(champion.label)}</div>
+                    <div class="ranking-champion-subtitle">${championPlace}</div>
+                  </div>
+                </div>
+                <div class="ranking-champion-value">${formatNumber(champion.efficiency, 2)} %</div>
+              </div>
+              <div class="ranking-progress-track" style="--ranking-target:${markerPosition}%">
+                <div class="ranking-progress-fill ${championGapClass}" style="width:${championProgress}%"></div>
+                <span class="ranking-rfc-marker" aria-hidden="true"></span>
+              </div>
+              <div class="ranking-champion-foot">
+                <span class="ranking-target-label">Objectif RFC : ${targetLabel} %</span>
+                <span class="ranking-gap-pill ${championGapClass}">${formatGap(champion.gap)} pts vs RFC</span>
+              </div>
+            </article>
+          `;
+
+          const maxEfficiency = Math.max(champion.efficiency, 0.01);
+          ranking.slice(1).forEach((item, index) => {
+            const rank = index + 2;
+            const belowTarget = item.gap < 0;
+            const barWidth = Math.max(0, Math.min(100, (item.efficiency / maxEfficiency) * 100));
+            html += `
+              <div class="nav-ranking-item top-${rank}">
+                <div class="nav-ranking-line">
+                  <span class="nav-ranking-medal">${rank}</span>
+                  <span>${escapeText(item.label)}</span>
+                  <span class="ranking-row-value">${formatNumber(item.efficiency, 1)} %</span>
+                </div>
+                <div class="ranking-row-detail">
+                  <div class="ranking-row-track"><div class="ranking-row-fill ${belowTarget ? 'below-target' : ''}" style="width:${barWidth}%"></div></div>
+                  <span class="ranking-row-delta ${belowTarget ? 'below-target' : ''}">${formatGap(item.gap, 1)}</span>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          html = `<p class="dashboard-ranking-empty">${rankingByProject ? 'Aucun projet' : 'Aucune ligne'} saisi(e) pour cette date.</p>`;
         }
 
-        const medals = ['🥇', '🥈', '🥉'];
-        rankingEl.innerHTML = ranking.map((item, index) => {
-          const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
-          const rankLabel = medals[index] || `${index + 1}`;
-          const ecartLabel = `${item.ecart >= 0 ? '+' : ''}${item.ecart.toFixed(2)}%`;
-          const ecartClass = item.ecart >= 0 ? 'ranking-good' : 'ranking-bad';
-          return `
-            <div class="nav-ranking-item ${topClass}">
-              <div class="nav-ranking-line">
-                <span class="nav-ranking-medal">${rankLabel}</span>
-                <span>${item.line}</span>
-              </div>
-              <p class="nav-ranking-meta">Efficience: ${item.avgEfficiency.toFixed(2)}% | RFC: ${item.avgRfc.toFixed(2)}%</p>
-              <p class="nav-ranking-meta ${ecartClass}">Écart ${ecartLabel} | ${item.count} saisie(s)</p>
-            </div>
-          `;
-        }).join('');
+        const aboveTarget = ranking.filter((item) => item.gap >= 0).length;
+        const unit = rankingByProject ? 'projet' : 'ligne';
+        const unitPlural = rankingByProject ? 'projets' : 'lignes';
+        html += `
+          <div class="ranking-panel-footer">
+            <span class="ranking-panel-footer-summary"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>${aboveTarget} ${aboveTarget === 1 ? unit : unitPlural} sur ${ranking.length} au-dessus de la cible</span>
+            <span class="ranking-panel-footer-label">Écart en pts</span>
+          </div>
+        `;
+        rankingEl.innerHTML = html;
       }
 
       function onDashboardRfcChange() {
