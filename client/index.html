@@ -2239,13 +2239,38 @@
         let values = [];
         let colors = [];
         let borders = [];
+        let projectLineValues = null;
 
         if (currentUser.role === 'superadmin' && getDashboardOwnerId() !== 'all') {
           const efficiency = Number(globalEfficiency.toFixed(2));
-          labels = [getUserLabelById(getDashboardOwnerId())];
-          values = [efficiency];
-          colors = [efficiency - globalRfc < 0 ? 'rgba(220, 53, 69, 0.85)' : 'rgba(25, 135, 84, 0.85)'];
-          borders = [efficiency - globalRfc < 0 ? 'rgba(176, 34, 50, 1)' : 'rgba(17, 109, 65, 1)'];
+          const byLine = new Map();
+          filtered.forEach((item) => {
+            const line = item.line || item.ligne || item.line_name || item.lineName || 'Sans ligne';
+            const current = byLine.get(line) || { effectifTotal: 0, weightedOutput: 0 };
+            current.effectifTotal += Number(item.effectif || 0);
+            current.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
+            byLine.set(line, current);
+          });
+
+          const lineMetrics = Array.from(byLine.entries()).map(([line, data]) => {
+            const lineAvailableHours = data.effectifTotal * WORKING_HOURS;
+            return {
+              line,
+              efficiency: lineAvailableHours > 0 ? Number(((data.weightedOutput / lineAvailableHours) * 100).toFixed(2)) : 0
+            };
+          }).sort((a, b) => b.efficiency - a.efficiency);
+
+          labels = ['Efficience globale', ...lineMetrics.map((item) => item.line)];
+          values = [efficiency, ...lineMetrics.map((item) => item.efficiency)];
+          colors = [
+            efficiency - globalRfc < 0 ? 'rgba(220, 53, 69, 0.9)' : 'rgba(13, 50, 96, 0.9)',
+            ...lineMetrics.map((item) => item.efficiency - globalRfc < 0 ? 'rgba(217, 119, 6, 0.88)' : 'rgba(21, 128, 61, 0.85)')
+          ];
+          borders = [
+            efficiency - globalRfc < 0 ? 'rgba(176, 34, 50, 1)' : 'rgba(11, 42, 91, 1)',
+            ...lineMetrics.map((item) => item.efficiency - globalRfc < 0 ? 'rgba(180, 83, 9, 1)' : 'rgba(21, 128, 61, 1)')
+          ];
+          projectLineValues = [null, ...lineMetrics.map((item) => item.efficiency)];
         } else if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
           const byUser = new Map();
           const configuredUserIds = new Set(getDashboardSelectableUsers().filter((user) => !user.unavailable).map((user) => user.id));
@@ -2340,33 +2365,52 @@
           }
         };
 
-        dashboardChart = new Chart(ctx, {
-          plugins: [barValueLabelPlugin],
-          type: 'bar',
-          data: {
-            labels: labels.length ? labels : ['Aucune donnée'],
-            datasets: [{
+        const rfcDataset = {
+          type: 'line',
+          label: 'RFC global (%)',
+          data: labels.length ? labels.map(() => Number(globalRfc.toFixed(2))) : [Number(globalRfc.toFixed(2))],
+          borderColor: '#0d6efd',
+          backgroundColor: 'rgba(13, 110, 253, 0.12)',
+          borderWidth: 3,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: '#0d6efd',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          fill: false
+        };
+        const efficiencyDatasets = projectLineValues
+          ? [{
+              label: 'Efficience globale du projet (%)',
+              data: values.map((value, index) => index === 0 ? value : null),
+              backgroundColor: colors[0],
+              borderColor: borders[0],
+              borderWidth: 1,
+              borderRadius: 8
+            }, {
+              label: 'Efficience par ligne (%)',
+              data: projectLineValues,
+              backgroundColor: ['transparent', ...colors.slice(1)],
+              borderColor: ['transparent', ...borders.slice(1)],
+              borderWidth: 1,
+              borderRadius: 8
+            }, rfcDataset]
+          : [{
               label: 'Efficience globale (%)',
               data: values.length ? values : [0],
               backgroundColor: colors.length ? colors : ['rgba(13, 50, 96, 0.8)'],
               borderColor: borders.length ? borders : ['rgba(255, 122, 26, 1)'],
               borderWidth: 1,
               borderRadius: 8
-            }, {
-              type: 'line',
-              label: 'RFC global (%)',
-              data: labels.length ? labels.map(() => Number(globalRfc.toFixed(2))) : [Number(globalRfc.toFixed(2))],
-              borderColor: '#0d6efd',
-              backgroundColor: 'rgba(13, 110, 253, 0.12)',
-              borderWidth: 3,
-              tension: 0,
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              pointBackgroundColor: '#0d6efd',
-              pointBorderColor: '#ffffff',
-              pointBorderWidth: 2,
-              fill: false
-            }]
+            }, rfcDataset];
+
+        dashboardChart = new Chart(ctx, {
+          plugins: [barValueLabelPlugin],
+          type: 'bar',
+          data: {
+            labels: labels.length ? labels : ['Aucune donnée'],
+            datasets: efficiencyDatasets
           },
           options: {
             responsive: true,
@@ -2377,7 +2421,7 @@
                 title: { display: true, text: 'Valeurs (%)' }
               },
               x: {
-                title: { display: true, text: 'Lignes' }
+                title: { display: true, text: projectLineValues ? 'Projet et lignes de production' : 'Lignes' }
               }
             },
             plugins: {
