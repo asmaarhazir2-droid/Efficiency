@@ -1706,14 +1706,24 @@
         const ref = String(reference || '').trim().toLowerCase();
         if (!ref) return null;
 
-        const byLine = appGammes.find((item) =>
-          String(item.reference || '').trim().toLowerCase() === ref
-          && String(item.line || '').trim().toLowerCase() === String(line || '').trim().toLowerCase()
-        );
+        const normalizeReference = (value) => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizeDigits = (value) => String(value || '').replace(/\D/g, '');
+        const selectedLine = String(line || '').trim().toLowerCase();
+        const sameLine = (item) => String(item.line || '').trim().toLowerCase() === selectedLine;
 
-        if (byLine) return byLine;
+        const exactMatches = appGammes.filter((item) => normalizeReference(item.reference) === normalizeReference(ref));
+        const exactLineMatch = exactMatches.find(sameLine);
+        if (exactLineMatch) return exactLineMatch;
+        if (exactMatches.length === 1) return exactMatches[0];
+        if (exactMatches.length > 1) return null;
 
-        return appGammes.find((item) => String(item.reference || '').trim().toLowerCase() === ref) || null;
+        const suffix = normalizeDigits(ref);
+        if (suffix.length !== 4) return null;
+
+        const suffixMatches = appGammes.filter((item) => normalizeDigits(item.reference).endsWith(suffix));
+        const suffixLineMatches = suffixMatches.filter(sameLine);
+        const candidates = suffixLineMatches.length ? suffixLineMatches : suffixMatches;
+        return candidates.length === 1 ? candidates[0] : null;
       }
 
       function calculateEfficiency(quantity, gammeTime, effectif) {
@@ -2697,7 +2707,7 @@
           <div class="entry-form-grid reference-item-row mb-2" data-row-id="${rowId}">
             <div class="entry-field">
               <label class="field-label">Référence</label>
-              <input class="entry-input reference-item-input" type="text" value="${reference}" oninput="updateEfficiencyPreview()" required>
+              <input class="entry-input reference-item-input" type="text" value="${reference}" placeholder="Référence complète ou 4 derniers chiffres" title="Tu peux saisir la référence complète ou uniquement ses 4 derniers chiffres" oninput="updateEfficiencyPreview()" required>
             </div>
             <div class="entry-field">
               <label class="field-label">Quantité produite</label>
@@ -2814,7 +2824,7 @@
           }
           const gammeRow = findGammeByReference(item.reference, line);
           if (!gammeRow) {
-            statusEl.textContent = `Référence non trouvée: ${item.reference}`;
+            statusEl.textContent = `Référence introuvable ou suffixe à 4 chiffres ambigu: ${item.reference}. Saisis la référence complète.`;
             return;
           }
           const gammeTime = Number(gammeRow.gamme_time);
@@ -2867,7 +2877,11 @@
         const statusEl = document.getElementById('gammeImportStatus');
         const fileInput = document.getElementById('gammeFile');
         const file = fileInput && fileInput.files && fileInput.files[0];
-        if (!file) return;
+        pendingGammes = [];
+        if (!file) {
+          if (statusEl) statusEl.textContent = 'Sélectionne un fichier Excel avant de cliquer sur Importer.';
+          return;
+        }
 
         if (typeof XLSX === 'undefined') {
           if (statusEl) statusEl.textContent = 'Librairie Excel non chargée.';
@@ -2891,17 +2905,22 @@
               && headers.some((h) => ['tg', 'tempsdegamme', 'gamme', 'tempsgamme', 'cycle', 'cycletime'].includes(h));
           });
 
-          if (headerRowIndex === -1) {
-            if (statusEl) statusEl.textContent = 'En-têtes introuvables dans les 10 premières lignes. Ajoutez Reference et TG (ou Temps de gamme).';
-            return;
+          let refIndex = 0;
+          let gammeIndex = 1;
+          let lineIndex = -1;
+          let dataStartIndex = 0;
+          let columnDescription = 'colonnes A (Reference) et B (TG / Temps de gamme)';
+
+          if (headerRowIndex !== -1) {
+            const headers = rows[headerRowIndex].map((header) => normalizeHeader(header));
+            refIndex = headers.findIndex((h) => ['reference', 'ref', 'article'].includes(h));
+            lineIndex = headers.findIndex((h) => ['ligne', 'line', 'lignes'].includes(h));
+            gammeIndex = headers.findIndex((h) => ['tg', 'tempsdegamme', 'gamme', 'tempsgamme', 'cycle', 'cycletime'].includes(h));
+            dataStartIndex = headerRowIndex + 1;
+            columnDescription = `colonnes ${XLSX.utils.encode_col(refIndex)} (${rows[headerRowIndex][refIndex]}) et ${XLSX.utils.encode_col(gammeIndex)} (${rows[headerRowIndex][gammeIndex]})`;
           }
 
-          const headers = rows[headerRowIndex].map((header) => normalizeHeader(header));
-          const refIndex = headers.findIndex((h) => ['reference', 'ref', 'article'].includes(h));
-          const lineIndex = headers.findIndex((h) => ['ligne', 'line', 'lignes'].includes(h));
-          const gammeIndex = headers.findIndex((h) => ['tg', 'tempsdegamme', 'gamme', 'tempsgamme', 'cycle', 'cycletime'].includes(h));
-
-          const imported = rows.slice(headerRowIndex + 1)
+          const imported = rows.slice(dataStartIndex)
             .map((row) => {
               const reference = String(row[refIndex] || '').trim();
               const gammeTime = toNumber(row[gammeIndex]);
@@ -2912,7 +2931,7 @@
             .filter(Boolean);
 
           if (!imported.length) {
-            if (statusEl) statusEl.textContent = 'Aucune ligne valide importée.';
+            if (statusEl) statusEl.textContent = `Aucune ligne valide trouvée dans ${columnDescription}. Vérifie que chaque référence est renseignée et que le temps de gamme est un nombre supérieur à 0.`;
             return;
           }
 
@@ -2936,38 +2955,53 @@
           return;
         }
 
-        if (!useFirebase) {
-          const merged = new Map((demoState.gammes || []).map((item) => [buildOwnedGammeKey(item.user_id, item.line, item.reference), item]));
-          pendingGammes.forEach((item) => {
-            merged.set(buildOwnedGammeKey(item.user_id, item.line, item.reference), {
-              id: `g${Date.now()}${Math.random().toString(16).slice(2, 8)}`,
-              ...item
-            });
-          });
-          demoState.gammes = Array.from(merged.values());
-          const importedLines = pendingGammes.map((item) => String(item.line || '').trim()).filter(Boolean);
-          persistOwnedLines([...new Set([...(Array.isArray(appLines) ? appLines : []), ...importedLines])].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' })));
-          saveState();
-        } else {
-          const writes = pendingGammes.map((item) => {
-            const docId = buildOwnedGammeKey(item.user_id, item.line, item.reference).replace(/[^a-z0-9_]/g, '_');
-            return db.collection('gammes').doc(docId).set(item, { merge: true });
-          });
-          await Promise.all(writes);
-
-          const importedLines = [...new Set(pendingGammes.map((item) => String(item.line || '').trim()).filter(Boolean))];
-          await Promise.all(importedLines.map((line) => {
-            const docId = `${currentUser.id}_${line.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-            return db.collection('production_lines').doc(docId).set({ name: line, user_id: currentUser.id });
-          }));
-        }
-
+        const saveButton = document.querySelector('#adminContent button[onclick="saveImportedGammes()"]');
         const savedCount = pendingGammes.length;
-        pendingGammes = [];
-        await refreshDataAndRender();
-        navigateTo('admin');
-        const refreshedStatus = document.getElementById('gammeImportStatus');
-        if (refreshedStatus) refreshedStatus.textContent = `${savedCount} référence(s) enregistrée(s).`;
+        if (saveButton) saveButton.disabled = true;
+
+        try {
+          if (!useFirebase) {
+            const merged = new Map((demoState.gammes || []).map((item) => [buildOwnedGammeKey(item.user_id, item.line, item.reference), item]));
+            pendingGammes.forEach((item) => {
+              merged.set(buildOwnedGammeKey(item.user_id, item.line, item.reference), {
+                id: `g${Date.now()}${Math.random().toString(16).slice(2, 8)}`,
+                ...item
+              });
+            });
+            demoState.gammes = Array.from(merged.values());
+            const importedLines = pendingGammes.map((item) => String(item.line || '').trim()).filter(Boolean);
+            persistOwnedLines([...new Set([...(Array.isArray(appLines) ? appLines : []), ...importedLines])].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' })));
+            saveState();
+          } else {
+            if (!currentUser?.id) throw new Error('Compte non connecté. Déconnecte-toi puis reconnecte-toi.');
+
+            const writes = pendingGammes.map((item) => {
+              const docId = buildOwnedGammeKey(item.user_id, item.line, item.reference).replace(/[^a-z0-9_]/g, '_');
+              return db.collection('gammes').doc(docId).set(item, { merge: true });
+            });
+            await Promise.all(writes);
+
+            const importedLines = [...new Set(pendingGammes.map((item) => String(item.line || '').trim()).filter(Boolean))];
+            await Promise.all(importedLines.map((line) => {
+              const docId = `${currentUser.id}_${line.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+              return db.collection('production_lines').doc(docId).set({ name: line, user_id: currentUser.id });
+            }));
+          }
+
+          pendingGammes = [];
+          await refreshDataAndRender();
+          navigateTo('admin');
+          const refreshedStatus = document.getElementById('gammeImportStatus');
+          if (refreshedStatus) refreshedStatus.textContent = `${savedCount} référence(s) et temps de gamme enregistré(s).`;
+        } catch (error) {
+          const errorCode = error.code || '';
+          const errorMessage = errorCode === 'permission-denied'
+            ? 'Enregistrement refusé par Firestore. Publie les règles Firestore du fichier firestore.rules et vérifie que ce compte possède users/{UID} avec son e-mail et le rôle user ou superadmin.'
+            : `Erreur d’enregistrement (${errorCode || 'inconnue'}): ${error.message || error}`;
+          if (statusEl) statusEl.textContent = errorMessage;
+        } finally {
+          if (saveButton) saveButton.disabled = false;
+        }
       }
 
       function renderSuperAdmin() {
