@@ -890,6 +890,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
         gap: 6px;
         margin-top: 9px;
       }
@@ -910,6 +911,21 @@
       }
 
       .ranking-gap-pill.below-target {
+        background: #fef3c7;
+        color: #b45309;
+      }
+
+      .ranking-gap-pill.comparison-yesterday {
+        background: #eef2f6;
+        color: #526782;
+      }
+
+      .ranking-gap-pill.comparison-yesterday.positive {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      .ranking-gap-pill.comparison-yesterday.negative {
         background: #fef3c7;
         color: #b45309;
       }
@@ -957,13 +973,18 @@
       }
 
       .nav-ranking-item.top-2 .nav-ranking-medal {
-        background: #e2e8f0;
-        color: #475569;
+        background: #cbd5e1;
+        color: #334155;
       }
 
       .nav-ranking-item.top-3 .nav-ranking-medal {
-        background: #fed7aa;
-        color: #9a3412;
+        background: #cd7f32;
+        color: #ffffff;
+      }
+
+      .nav-ranking-item.top-2 .nav-ranking-medal i,
+      .nav-ranking-item.top-3 .nav-ranking-medal i {
+        font-size: 0.8rem;
       }
 
       .ranking-row-value {
@@ -1007,6 +1028,26 @@
       }
 
       .ranking-row-delta.below-target {
+        color: #b45309;
+      }
+
+      .ranking-row-deltas {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        white-space: nowrap;
+      }
+
+      .ranking-row-delta.yesterday {
+        color: #64748b;
+      }
+
+      .ranking-row-delta.yesterday.positive {
+        color: #15803d;
+      }
+
+      .ranking-row-delta.yesterday.negative {
         color: #b45309;
       }
 
@@ -2361,12 +2402,23 @@
         const targetRfc = Number.isFinite(Number(rfcInput?.value)) ? Number(rfcInput.value) : 80;
         const aggregate = new Map();
         const rankingByProject = currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all';
+        const selectedDay = new Date(`${dashboardSelectedDate || getTodayKey()}T00:00:00`);
+        selectedDay.setDate(selectedDay.getDate() - 1);
+        const previousDate = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth() + 1).padStart(2, '0')}-${String(selectedDay.getDate()).padStart(2, '0')}`;
+        const selectedOwnerId = getDashboardOwnerId();
+        const previousEntries = appEntries.filter((item) => {
+          if (getEntryDate(item) !== previousDate) return false;
+          const ownerId = item.user_id || item.userId;
+          if (currentUser.role !== 'superadmin') return ownerId === currentUser.id;
+          if (selectedOwnerId !== 'all') return ownerId === selectedOwnerId;
+          return configuredUserIds.has(ownerId);
+        });
+        const getRankingKey = (item) => rankingByProject
+          ? (item.user_id || item.userId)
+          : (item.line || item.ligne || item.line_name || item.lineName || 'Sans ligne');
 
         sourceEntries.forEach((item) => {
-          const ownerId = item.user_id || item.userId;
-          const key = rankingByProject
-            ? ownerId
-            : (item.line || item.ligne || item.line_name || item.lineName || 'Sans ligne');
+          const key = getRankingKey(item);
           if (!key) return;
 
           const current = aggregate.get(key) || {
@@ -2381,10 +2433,28 @@
           aggregate.set(key, current);
         });
 
+        previousEntries.forEach((item) => {
+          const key = getRankingKey(item);
+          const current = aggregate.get(key);
+          if (!current) return;
+          current.previousEffectifTotal = (current.previousEffectifTotal || 0) + Number(item.effectif || 0);
+          current.previousWeightedOutput = (current.previousWeightedOutput || 0) + Number(item.quantity || 0) * Number(item.gamme_time || 0);
+          current.previousCount = (current.previousCount || 0) + 1;
+        });
+
         const ranking = Array.from(aggregate.values()).map((item) => {
           const availableHours = item.effectifTotal * WORKING_HOURS;
           const efficiency = availableHours > 0 ? (item.weightedOutput / availableHours) * 100 : 0;
-          return { ...item, efficiency, gap: efficiency - targetRfc };
+          const previousAvailableHours = Number(item.previousEffectifTotal || 0) * WORKING_HOURS;
+          const previousEfficiency = previousAvailableHours > 0
+            ? (Number(item.previousWeightedOutput || 0) / previousAvailableHours) * 100
+            : null;
+          return {
+            ...item,
+            efficiency,
+            gap: efficiency - targetRfc,
+            gapYesterday: previousEfficiency === null ? null : efficiency - previousEfficiency
+          };
         }).sort((a, b) => {
           if (dashboardRankingMode === 'ecart' && b.gap !== a.gap) return b.gap - a.gap;
           if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
@@ -2410,6 +2480,7 @@
         if (ranking.length) {
           const champion = ranking[0];
           const championGapClass = champion.gap < 0 ? 'below-target' : '';
+          const championYesterdayClass = champion.gapYesterday === null ? '' : champion.gapYesterday >= 0 ? 'positive' : 'negative';
           const championProgress = Math.max(0, Math.min(100, (champion.efficiency / 120) * 100));
           const championPlace = champion.count === 1 ? '1re place · 1 saisie' : `1re place · ${champion.count} saisies`;
           html += `
@@ -2431,6 +2502,7 @@
               <div class="ranking-champion-foot">
                 <span class="ranking-target-label">Objectif RFC : ${targetLabel} %</span>
                 <span class="ranking-gap-pill ${championGapClass}">${formatGap(champion.gap)} pts vs RFC</span>
+                <span class="ranking-gap-pill comparison-yesterday ${championYesterdayClass}">${champion.gapYesterday === null ? '—' : `${formatGap(champion.gapYesterday)} pts`} vs hier</span>
               </div>
             </article>
           `;
@@ -2440,16 +2512,23 @@
             const rank = index + 2;
             const belowTarget = item.gap < 0;
             const barWidth = Math.max(0, Math.min(100, (item.efficiency / maxEfficiency) * 100));
+            const rankBadge = rank === 2 || rank === 3
+              ? '<i class="bi bi-award-fill" aria-hidden="true"></i>'
+              : String(rank);
+            const yesterdayClass = item.gapYesterday === null ? '' : item.gapYesterday >= 0 ? 'positive' : 'negative';
             html += `
               <div class="nav-ranking-item top-${rank}">
                 <div class="nav-ranking-line">
-                  <span class="nav-ranking-medal">${rank}</span>
+                  <span class="nav-ranking-medal">${rankBadge}</span>
                   <span>${escapeText(item.label)}</span>
                   <span class="ranking-row-value">${formatNumber(item.efficiency, 1)} %</span>
                 </div>
                 <div class="ranking-row-detail">
                   <div class="ranking-row-track"><div class="ranking-row-fill ${belowTarget ? 'below-target' : ''}" style="width:${barWidth}%"></div></div>
-                  <span class="ranking-row-delta ${belowTarget ? 'below-target' : ''}">${formatGap(item.gap, 1)}</span>
+                  <span class="ranking-row-deltas">
+                    <span class="ranking-row-delta ${belowTarget ? 'below-target' : ''}">${formatGap(item.gap, 1)} pts RFC</span>
+                    <span class="ranking-row-delta yesterday ${yesterdayClass}">${item.gapYesterday === null ? '—' : `${formatGap(item.gapYesterday, 1)} pts`} hier</span>
+                  </span>
                 </div>
               </div>
             `;
