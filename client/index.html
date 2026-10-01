@@ -2270,7 +2270,7 @@
             efficiency - globalRfc < 0 ? 'rgba(176, 34, 50, 1)' : 'rgba(11, 42, 91, 1)',
             ...lineMetrics.map((item) => item.efficiency - globalRfc < 0 ? 'rgba(180, 83, 9, 1)' : 'rgba(21, 128, 61, 1)')
           ];
-          projectLineValues = [null, ...lineMetrics.map((item) => item.efficiency)];
+          projectLineValues = true;
         } else if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
           const byUser = new Map();
           const configuredUserIds = new Set(getDashboardSelectableUsers().filter((user) => !user.unavailable).map((user) => user.id));
@@ -2382,17 +2382,10 @@
         };
         const efficiencyDatasets = projectLineValues
           ? [{
-              label: 'Efficience globale du projet (%)',
-              data: values.map((value, index) => index === 0 ? value : null),
-              backgroundColor: colors[0],
-              borderColor: borders[0],
-              borderWidth: 1,
-              borderRadius: 8
-            }, {
-              label: 'Efficience par ligne (%)',
-              data: projectLineValues,
-              backgroundColor: ['transparent', ...colors.slice(1)],
-              borderColor: ['transparent', ...borders.slice(1)],
+              label: 'Efficience globale et par ligne (%)',
+              data: values,
+              backgroundColor: colors,
+              borderColor: borders,
               borderWidth: 1,
               borderRadius: 8
             }, rfcDataset]
