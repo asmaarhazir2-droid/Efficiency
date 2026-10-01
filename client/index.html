@@ -1166,6 +1166,7 @@
 
       /* Dashboard chrome: keep the chart and Ranking challenge section unchanged. */
       .workspace-topbar {
+        position: relative;
         min-height: 54px;
         padding: 9px 24px;
         margin-bottom: 14px;
@@ -1192,6 +1193,21 @@
         background: rgba(255, 255, 255, 0.1);
         color: #fdba74;
         font-size: 1rem;
+      }
+
+      .workspace-center-label {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 5px 13px;
+        border: 1px solid rgba(253, 186, 116, 0.35);
+        border-radius: 999px;
+        background: rgba(253, 186, 116, 0.1);
+        color: #fed7aa;
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
       }
 
       .workspace-date {
@@ -1232,6 +1248,10 @@
           height: 30px;
           flex-basis: 30px;
           border-radius: 9px;
+        }
+
+        .workspace-center-label {
+          display: none;
         }
 
         .workspace-date {
@@ -1571,6 +1591,7 @@
       <div id="appView" class="hidden">
         <header class="workspace-topbar">
           <h1 class="workspace-title"><span class="workspace-title-icon"><i class="bi bi-clipboard-data" aria-hidden="true"></i></span> Efficiency tracking</h1>
+          <span class="workspace-center-label">Efficiency</span>
           <div id="workspaceDate" class="workspace-date"></div>
         </header>
 
