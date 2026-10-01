@@ -2129,7 +2129,7 @@
             const project = DASHBOARD_PROJECTS.find((item) => item.email.toLowerCase() === String(currentUser.email || '').toLowerCase());
             projectLabel = project?.label || currentUser.email?.split('@')[0] || '';
           }
-          headerLabel.textContent = `${projectLabel} + Efficiency`;
+          headerLabel.textContent = `${projectLabel} Efficiency`;
         }
 
         const availableDates = getAvailableEntryDates();
