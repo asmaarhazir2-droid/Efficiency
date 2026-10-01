@@ -2500,6 +2500,16 @@
               legend: { display: true },
               tooltip: {
                 callbacks: {
+                  label(context) {
+                    if (currentUser.role !== 'superadmin' || getDashboardOwnerId() !== 'all') {
+                      const value = Number(context.parsed?.y ?? context.raw ?? 0);
+                      return `${context.dataset.label}: ${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`;
+                    }
+
+                    const projectLabel = context.label;
+                    const value = Number(context.parsed?.y ?? context.raw ?? 0);
+                    return `${projectLabel} + Efficiency: ${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`;
+                  },
                   afterBody(items) {
                     if (currentUser.role !== 'superadmin' || getDashboardOwnerId() !== 'all' || !items.length) return [];
                     const lineMetrics = projectLineEfficiencies.get(items[0].label) || [];
