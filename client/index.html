@@ -1170,6 +1170,7 @@
         padding: 8px 22px;
         margin-bottom: 14px;
         background: #0d3260;
+        border-bottom: 2px solid #f97316;
         box-shadow: 0 5px 16px rgba(15, 53, 103, 0.15);
       }
 
@@ -1214,6 +1215,10 @@
         color: #ffffff;
       }
 
+      .app-layout.nav-collapsed #btnDashboard.active i {
+        color: #fb923c;
+      }
+
       .app-layout.nav-collapsed .menu-btn.action-danger {
         background: #fff0f1;
         color: #c2414b;
@@ -1254,7 +1259,7 @@
       }
 
       .dashboard-summary-label i {
-        color: #46617f;
+        color: #c2410c;
         font-size: 0.95rem;
       }
 
@@ -1333,6 +1338,12 @@
         background-color: #ffffff;
         color: #243c5a;
         font-size: 0.88rem;
+      }
+
+      .dashboard-main-column > .dashboard-toolbar .entry-input:focus,
+      .dashboard-main-column > .dashboard-toolbar .entry-select:focus {
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
       }
 
       .dashboard-filter-apply {
