@@ -1,3 +1,6 @@
 [build]
   command = "npm run build"
   publish = "client/dist"
+
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyATY9OXX_hI2rgspA8ubf2dExH_58HEp5Y"
