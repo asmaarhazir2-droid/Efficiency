@@ -933,6 +933,297 @@
           justify-content: center;
         }
       }
+
+      /* Dashboard chrome: keep the chart and Ranking challenge section unchanged. */
+      .workspace-topbar {
+        min-height: 54px;
+        padding: 8px 22px;
+        margin-bottom: 14px;
+        background: #0d3260;
+        box-shadow: 0 5px 16px rgba(15, 53, 103, 0.15);
+      }
+
+      .workspace-title {
+        font-size: 1.28rem;
+        font-weight: 750;
+        letter-spacing: 0.01em;
+      }
+
+      .workspace-date {
+        padding: 6px 11px;
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.09);
+        color: #ffc083;
+        font-size: 0.88rem;
+        font-weight: 650;
+      }
+
+      .app-layout.nav-collapsed {
+        grid-template-columns: 78px minmax(0, 1fr);
+        gap: 22px;
+      }
+
+      .app-layout.nav-collapsed .side-menu {
+        width: 78px;
+        padding: 12px 7px;
+        border-radius: 15px;
+      }
+
+      .app-layout.nav-collapsed .menu-btn {
+        width: 52px;
+        min-height: 44px;
+        padding: 12px 0;
+        margin-bottom: 8px;
+        border-radius: 12px;
+        text-align: center;
+      }
+
+      .app-layout.nav-collapsed .menu-btn.active {
+        border-left: 0;
+        background: #0d3260;
+        color: #ffffff;
+      }
+
+      .app-layout.nav-collapsed .menu-btn.action-danger {
+        background: #fff0f1;
+        color: #c2414b;
+      }
+
+      .app-layout.nav-collapsed .menu-btn i {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .dashboard-summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .dashboard-summary-card {
+        min-height: 116px;
+        padding: 16px 18px 13px;
+        border: 1px solid #dbe4ef;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 8px 22px rgba(15, 53, 103, 0.07);
+      }
+
+      .dashboard-summary-card-efficiency {
+        border: 2px solid #15803d;
+        background: linear-gradient(145deg, #ffffff, #f3fbf5);
+      }
+
+      .dashboard-summary-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 11px;
+        color: #526782;
+        font-size: 0.86rem;
+      }
+
+      .dashboard-summary-label i {
+        color: #46617f;
+        font-size: 0.95rem;
+      }
+
+      .dashboard-summary-value {
+        color: #0d3260;
+        font-size: clamp(1.45rem, 2vw, 1.8rem);
+        letter-spacing: -0.035em;
+      }
+
+      .dashboard-summary-delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 10px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #eef2f6;
+        color: #637184;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .dashboard-summary-delta.positive {
+        background: #e8f6ed;
+        color: #15803d;
+      }
+
+      .dashboard-summary-delta.negative {
+        background: #fff0ee;
+        color: #b93832;
+      }
+
+      .dashboard-main-column > .dashboard-toolbar {
+        display: grid;
+        grid-template-columns: auto minmax(150px, 1fr) auto minmax(130px, 0.8fr) auto auto;
+        align-items: end;
+        justify-content: initial;
+        gap: 10px 12px;
+        margin: 0 0 18px;
+        padding: 14px 16px;
+        border: 1px solid #dbe4ef;
+        border-radius: 15px;
+        background: #ffffff;
+        box-shadow: 0 6px 18px rgba(15, 53, 103, 0.045);
+      }
+
+      .dashboard-main-column > .dashboard-toolbar.has-project-filter {
+        grid-template-columns: auto minmax(150px, 1fr) auto minmax(190px, 1.15fr) auto minmax(130px, 0.8fr) auto auto;
+      }
+
+      .dashboard-main-column > .dashboard-toolbar .field-label {
+        align-self: center;
+        margin: 0;
+        color: #304a68;
+        font-size: 0.82rem;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .dashboard-main-column > .dashboard-toolbar .entry-input,
+      .dashboard-main-column > .dashboard-toolbar .entry-select {
+        width: 100%;
+        max-width: none !important;
+        height: 42px;
+        min-height: 42px;
+        margin: 0;
+        padding: 8px 11px;
+        border: 1px solid #cbd6e4;
+        border-radius: 10px;
+        background-color: #ffffff;
+        color: #243c5a;
+        font-size: 0.88rem;
+      }
+
+      .dashboard-filter-apply {
+        height: 42px;
+        padding: 0 17px !important;
+        border-radius: 10px !important;
+        background: #0d3260 !important;
+        color: #ffffff !important;
+        font-size: 0.86rem !important;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .dashboard-filter-reset {
+        height: 42px;
+        padding: 0 6px;
+        border: 0;
+        background: transparent;
+        color: #526782;
+        font-size: 0.82rem;
+        font-weight: 700;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .dashboard-filter-reset:hover {
+        color: #0d3260;
+        text-decoration: underline;
+      }
+
+      @media (max-width: 1100px) {
+        .dashboard-summary-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dashboard-main-column > .dashboard-toolbar {
+          grid-template-columns: auto minmax(140px, 1fr) auto minmax(160px, 1fr);
+        }
+
+        .dashboard-main-column > .dashboard-toolbar.has-project-filter {
+          grid-template-columns: auto minmax(140px, 1fr) auto minmax(160px, 1fr);
+        }
+      }
+
+      @media (max-width: 1400px) {
+        .dashboard-main-column > .dashboard-toolbar,
+        .dashboard-main-column > .dashboard-toolbar.has-project-filter {
+          grid-template-columns: auto minmax(140px, 1fr) auto minmax(160px, 1fr);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .workspace-topbar {
+          margin: 0 -22px 14px;
+          padding: 10px 16px;
+          flex-direction: row;
+          align-items: center;
+        }
+
+        .workspace-title {
+          font-size: 1.05rem;
+        }
+
+        .workspace-date {
+          font-size: 0.75rem;
+          padding: 5px 8px;
+        }
+
+        .app-layout.nav-collapsed {
+          grid-template-columns: 78px minmax(0, 1fr);
+          gap: 10px;
+        }
+
+        .app-layout.nav-collapsed .side-menu {
+          width: 78px;
+          padding: 9px 7px;
+        }
+
+        .app-layout.nav-collapsed .menu-btn {
+          width: 52px;
+          min-height: 40px;
+        }
+
+        .dashboard-summary-grid {
+          gap: 9px;
+        }
+
+        .dashboard-summary-card {
+          min-height: 108px;
+          padding: 12px 10px;
+        }
+
+        .dashboard-summary-label {
+          gap: 5px;
+          font-size: 0.72rem;
+        }
+
+        .dashboard-summary-value {
+          font-size: 1.25rem;
+        }
+
+        .dashboard-summary-delta {
+          padding: 3px 6px;
+          font-size: 0.62rem;
+        }
+
+        .dashboard-main-column > .dashboard-toolbar {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding: 12px;
+        }
+
+        .dashboard-main-column > .dashboard-toolbar.has-project-filter {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .dashboard-main-column > .dashboard-toolbar .field-label {
+          align-self: end;
+          font-size: 0.74rem;
+        }
+
+        .dashboard-filter-apply,
+        .dashboard-filter-reset {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1062,7 +1353,7 @@
       let entryReferenceRowCount = 0;
       let dashboardChart = null;
       let dashboardSelectedDate = '';
-      let dashboardGlobalRfc = '';
+      let dashboardGlobalRfc = 80;
       let dashboardRankingMode = 'efficiency';
       let dashboardSelectedUserId = '';
       let dashboardUsers = [];
@@ -1511,7 +1802,7 @@
         const accountSelectHtml = currentUser.role === 'superadmin'
           ? `
             <label class="field-label mb-0">Projet:</label>
-            <select id="dashboardUserFilter" class="entry-select" style="max-width:240px" onchange="onDashboardUserChange()">
+            <select id="dashboardUserFilter" class="entry-select" style="max-width:240px">
               <option value="all" ${dashboardSelectedUserId === 'all' ? 'selected' : ''}>Tous les projets</option>
               ${selectableUsers.map((user) => `<option value="${user.id}" ${user.id === dashboardSelectedUserId ? 'selected' : ''} ${user.unavailable ? 'disabled' : ''}>${user.login}${user.unavailable ? ' (profil Firestore manquant)' : ''}</option>`).join('')}
             </select>
@@ -1525,28 +1816,34 @@
             <div class="dashboard-main-column">
               <div class="dashboard-summary-grid">
                 <div class="dashboard-summary-card">
-                  <p class="dashboard-summary-label">Effectif total</p>
+                  <p class="dashboard-summary-label"><i class="bi bi-people-fill" aria-hidden="true"></i>Effectif total</p>
                   <p id="summaryEffectif" class="dashboard-summary-value">0</p>
+                  <span id="summaryEffectifDelta" class="dashboard-summary-delta">stable</span>
                 </div>
                 <div class="dashboard-summary-card">
-                  <p class="dashboard-summary-label">Heures produites</p>
+                  <p class="dashboard-summary-label"><i class="bi bi-clock-fill" aria-hidden="true"></i>Heures produites</p>
                   <p id="summaryHours" class="dashboard-summary-value">0 h</p>
+                  <span id="summaryHoursDelta" class="dashboard-summary-delta">0,0 % vs hier</span>
                 </div>
                 <div class="dashboard-summary-card">
-                  <p class="dashboard-summary-label">Cadence totale</p>
+                  <p class="dashboard-summary-label"><i class="bi bi-speedometer2" aria-hidden="true"></i>Cadence totale</p>
                   <p id="summaryCadence" class="dashboard-summary-value">0</p>
+                  <span id="summaryCadenceDelta" class="dashboard-summary-delta">0 vs hier</span>
                 </div>
-                <div class="dashboard-summary-card">
-                  <p class="dashboard-summary-label">Efficience globale</p>
+                <div class="dashboard-summary-card dashboard-summary-card-efficiency">
+                  <p class="dashboard-summary-label"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Efficience globale</p>
                   <p id="summaryEfficiency" class="dashboard-summary-value">0%</p>
+                  <span id="summaryEfficiencyDelta" class="dashboard-summary-delta positive">0,00 pts vs RFC</span>
                 </div>
               </div>
-              <div class="dashboard-toolbar">
+              <div class="dashboard-toolbar ${currentUser.role === 'superadmin' ? 'has-project-filter' : ''}">
                 <label class="field-label mb-0">Date:</label>
-                <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}" style="max-width:260px" onchange="onDashboardDateChange()">
+                <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}">
                 ${accountSelectHtml}
-                <label class="field-label mb-0">RFC global:</label>
-                <input id="dashboardRfcFilter" class="entry-input" type="number" min="0" step="0.01" value="${defaultRfc.toFixed(2)}" style="max-width:170px" oninput="onDashboardRfcChange()">
+                <label class="field-label mb-0">RFC global (%):</label>
+                <input id="dashboardRfcFilter" class="entry-input" type="number" min="0" step="0.01" value="${defaultRfc.toFixed(2)}">
+                <button class="dashboard-filter-apply" type="button" onclick="applyDashboardFilters()">Appliquer</button>
+                <button class="dashboard-filter-reset" type="button" onclick="resetDashboardFilters()">Réinitialiser</button>
               </div>
               <div class="chart-box">
                 <canvas id="dashboardEfficiencyChart" class="chart-canvas"></canvas>
@@ -1629,7 +1926,7 @@
         const selectEl = document.getElementById('dashboardDateFilter');
         if (!selectEl) return;
 
-        const selectedDate = selectEl.value;
+        const selectedDate = dashboardSelectedDate || selectEl.value;
         dashboardSelectedDate = selectedDate;
         const filtered = getDashboardEntries().filter((item) => getEntryDate(item) === selectedDate);
 
@@ -1645,14 +1942,43 @@
         const summaryCadence = document.getElementById('summaryCadence');
         const summaryEfficiency = document.getElementById('summaryEfficiency');
         if (summaryEffectif) summaryEffectif.textContent = `${effectifTotal}`;
-        if (summaryHours) summaryHours.textContent = `${hoursProduced.toFixed(2)} h`;
+        if (summaryHours) summaryHours.textContent = `${hoursProduced.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} h`;
         if (summaryCadence) summaryCadence.textContent = `${cadenceTotal}`;
-        if (summaryEfficiency) summaryEfficiency.textContent = `${globalEfficiency.toFixed(2)}%`;
+        if (summaryEfficiency) summaryEfficiency.textContent = `${globalEfficiency.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 
         const rfcInput = document.getElementById('dashboardRfcFilter');
         const globalRfc = Number.isFinite(Number(rfcInput?.value))
           ? Number(rfcInput.value)
           : (filtered.length ? filtered.reduce((sum, item) => sum + Number(item.rfc || 0), 0) / filtered.length : 0);
+
+        const selectedDay = new Date(`${selectedDate}T00:00:00`);
+        selectedDay.setDate(selectedDay.getDate() - 1);
+        const previousDate = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth() + 1).padStart(2, '0')}-${String(selectedDay.getDate()).padStart(2, '0')}`;
+        const previousEntries = getDashboardEntries().filter((item) => getEntryDate(item) === previousDate);
+        const previousHours = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.gamme_time || 0), 0);
+        const previousCadence = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        const hoursDelta = previousHours > 0 ? ((hoursProduced - previousHours) / previousHours) * 100 : null;
+        const cadenceDelta = cadenceTotal - previousCadence;
+        const efficiencyDelta = globalEfficiency - globalRfc;
+        const formatSigned = (value, digits = 0) => {
+          const sign = value > 0 ? '+' : value < 0 ? '−' : '';
+          return `${sign}${Math.abs(value).toLocaleString('fr-FR', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+        };
+        const setDelta = (id, text, value) => {
+          const badge = document.getElementById(id);
+          if (!badge) return;
+          badge.textContent = text;
+          badge.classList.toggle('positive', value > 0);
+          badge.classList.toggle('negative', value < 0);
+        };
+        const effectifDelta = document.getElementById('summaryEffectifDelta');
+        if (effectifDelta) {
+          effectifDelta.textContent = 'stable';
+          effectifDelta.classList.remove('positive', 'negative');
+        }
+        setDelta('summaryHoursDelta', hoursDelta === null ? (hoursProduced > 0 ? 'Nouveau vs hier' : '0,0 % vs hier') : `${formatSigned(hoursDelta, 1)} % vs hier`, hoursDelta ?? (hoursProduced > 0 ? 1 : 0));
+        setDelta('summaryCadenceDelta', `${formatSigned(cadenceDelta)} vs hier`, cadenceDelta);
+        setDelta('summaryEfficiencyDelta', `${formatSigned(efficiencyDelta, 2)} pts vs RFC`, efficiencyDelta);
 
         renderNavRanking(filtered);
 
@@ -1926,8 +2252,27 @@
 
       function onDashboardRfcChange() {
         const rfcEl = document.getElementById('dashboardRfcFilter');
-        dashboardGlobalRfc = rfcEl ? rfcEl.value : '';
+        dashboardGlobalRfc = rfcEl ? rfcEl.value : 80;
         onDashboardDateChange();
+      }
+
+      function applyDashboardFilters() {
+        const dateEl = document.getElementById('dashboardDateFilter');
+        const projectEl = document.getElementById('dashboardUserFilter');
+        const rfcEl = document.getElementById('dashboardRfcFilter');
+        dashboardSelectedDate = dateEl?.value || getTodayKey();
+        if (currentUser.role === 'superadmin') {
+          dashboardSelectedUserId = projectEl?.value || 'all';
+        }
+        dashboardGlobalRfc = rfcEl?.value === '' ? 80 : Number(rfcEl?.value ?? 80);
+        renderDashboard();
+      }
+
+      function resetDashboardFilters() {
+        dashboardSelectedDate = getTodayKey();
+        dashboardSelectedUserId = currentUser.role === 'superadmin' ? 'all' : currentUser.id;
+        dashboardGlobalRfc = 80;
+        renderDashboard();
       }
 
       function onDashboardUserChange() {
