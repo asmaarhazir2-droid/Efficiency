@@ -1958,7 +1958,7 @@
         const previousEffectif = previousEntries.reduce((sum, item) => sum + Number(item.effectif || 0), 0);
         const previousHours = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.gamme_time || 0), 0);
         const previousCadence = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-        const hoursDelta = previousHours > 0 ? ((hoursProduced - previousHours) / previousHours) * 100 : null;
+        const hoursDelta = hoursProduced - previousHours;
         const cadenceDelta = cadenceTotal - previousCadence;
         const efficiencyDelta = globalEfficiency - globalRfc;
         const formatSigned = (value, digits = 0) => {
@@ -1979,7 +1979,7 @@
           effectifDelta.classList.toggle('positive', effectifChange > 0);
           effectifDelta.classList.toggle('negative', effectifChange < 0);
         }
-        setDelta('summaryHoursDelta', hoursDelta === null ? (hoursProduced > 0 ? 'Nouveau vs hier' : '0,0 % vs hier') : `${formatSigned(hoursDelta, 1)} % vs hier`, hoursDelta ?? (hoursProduced > 0 ? 1 : 0));
+        setDelta('summaryHoursDelta', `${formatSigned(hoursDelta, 2)} h vs hier`, hoursDelta);
         setDelta('summaryCadenceDelta', `${formatSigned(cadenceDelta)} vs hier`, cadenceDelta);
         setDelta('summaryEfficiencyDelta', `${formatSigned(efficiencyDelta, 2)} pts vs RFC`, efficiencyDelta);
 
