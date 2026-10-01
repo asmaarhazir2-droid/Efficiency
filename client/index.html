@@ -1065,8 +1065,19 @@
       let dashboardGlobalRfc = '';
       let dashboardRankingMode = 'efficiency';
       let dashboardSelectedUserId = '';
+      let dashboardUsers = [];
       let navigationCollapsed = false;
       const WORKING_HOURS = 8;
+      const DASHBOARD_PROJECTS = [
+        { label: 'X1310 PDB', email: 'pdb@leoni.com' },
+        { label: 'X1310 Lowdash', email: 'lowdash@leoni.com' },
+        { label: 'X1310 EGR', email: 'egr@leoni.com' },
+        { label: 'X1310 ENGINE', email: 'engine@leoni.com' },
+        { label: 'X1310 Smalls', email: 'smalls@leoni.com' },
+        { label: 'P13A MAIN BODY', email: 'mainbody@leoni.com' },
+        { label: 'P13A EGR', email: 'p13aegr@leoni.com' },
+        { label: 'P13A Smalls', email: 'p13asmalls@leoni.com' }
+      ];
       const DEMO_ACCOUNTS = [
         { id: 'u-pdb', login: 'pdb', password: 'pdb2026', email: 'pdb@example.com', role: 'user' },
         { id: 'u-lowdash', login: 'Lowdash', password: 'lowdash2026', email: 'lowdash@example.com', role: 'user' },
@@ -1389,16 +1400,21 @@
       function getDashboardSelectableUsers() {
         if (currentUser.role !== 'superadmin') return [];
 
-        const userById = new Map((demoState.users || []).map((user) => [user.id, user]));
-        return DEMO_ACCOUNTS
-          .filter((account) => account.role !== 'superadmin')
-          .map(({ password, ...user }) => userById.get(user.id) || user)
-          .filter(Boolean);
+        const userByEmail = new Map(dashboardUsers.map((user) => [String(user.email || '').toLowerCase(), user]));
+        return DASHBOARD_PROJECTS.map((project) => {
+          const user = userByEmail.get(project.email.toLowerCase());
+          return {
+            id: user?.id || `missing:${project.email}`,
+            email: project.email,
+            login: project.label,
+            unavailable: !user
+          };
+        });
       }
 
       function getUserLabelById(userId) {
         const user = getDashboardSelectableUsers().find((item) => item.id === userId);
-        return user ? user.login : String(userId || 'Plant');
+        return user ? user.login : String(userId || 'Projet');
       }
 
       function updateWorkspaceDate() {
@@ -1431,6 +1447,7 @@
         if (!useFirebase) {
           appDropdowns = [...demoState.dropdowns];
           appEntries = [...demoState.entries];
+          dashboardUsers = demoState.users || [];
           appGammes = [...(demoState.gammes || []).filter((item) => item.user_id === currentUser?.id)];
           appLines = getOwnedLinesFromState().map((item) => item.name).filter(Boolean);
           if (!appLines.length) {
@@ -1440,6 +1457,12 @@
         }
 
         const isSuperAdmin = currentUser.role === 'superadmin';
+        if (isSuperAdmin) {
+          const usersSnapshot = await db.collection('users').get();
+          dashboardUsers = usersSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+        } else {
+          dashboardUsers = [];
+        }
         const dropdownQuery = isSuperAdmin
           ? db.collection('dropdown_options')
           : db.collection('dropdown_options').where('user_id', '==', currentUser.id);
@@ -1487,10 +1510,10 @@
         const selectableUsers = getDashboardSelectableUsers();
         const accountSelectHtml = currentUser.role === 'superadmin'
           ? `
-            <label class="field-label mb-0">Plant:</label>
+            <label class="field-label mb-0">Projet:</label>
             <select id="dashboardUserFilter" class="entry-select" style="max-width:240px" onchange="onDashboardUserChange()">
-              <option value="all" ${dashboardSelectedUserId === 'all' ? 'selected' : ''}>Tous les plants</option>
-              ${selectableUsers.map((user) => `<option value="${user.id}" ${dashboardSelectedUserId === user.id ? 'selected' : ''}>${user.login}</option>`).join('')}
+              <option value="all" ${dashboardSelectedUserId === 'all' ? 'selected' : ''}>Tous les projets</option>
+              ${selectableUsers.map((user) => `<option value="${user.id}" ${user.id === dashboardSelectedUserId ? 'selected' : ''} ${user.unavailable ? 'disabled' : ''}>${user.login}${user.unavailable ? ' (profil Firestore manquant)' : ''}</option>`).join('')}
             </select>
           `
           : '';
@@ -1522,6 +1545,7 @@
                 ${accountSelectHtml}
                 <label class="field-label mb-0">Date:</label>
                 <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}" style="max-width:260px" onchange="onDashboardDateChange()">
+                ${accountSelectHtml}
                 <label class="field-label mb-0">RFC global:</label>
                 <input id="dashboardRfcFilter" class="entry-input" type="number" min="0" step="0.01" value="${defaultRfc.toFixed(2)}" style="max-width:170px" oninput="onDashboardRfcChange()">
               </div>
@@ -1638,11 +1662,18 @@
         let colors = [];
         let borders = [];
 
-        if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
+        if (currentUser.role === 'superadmin' && getDashboardOwnerId() !== 'all') {
+          const efficiency = Number(globalEfficiency.toFixed(2));
+          labels = [getUserLabelById(getDashboardOwnerId())];
+          values = [efficiency];
+          colors = [efficiency - globalRfc < 0 ? 'rgba(220, 53, 69, 0.85)' : 'rgba(25, 135, 84, 0.85)'];
+          borders = [efficiency - globalRfc < 0 ? 'rgba(176, 34, 50, 1)' : 'rgba(17, 109, 65, 1)'];
+        } else if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
           const byUser = new Map();
+          const configuredUserIds = new Set(getDashboardSelectableUsers().filter((user) => !user.unavailable).map((user) => user.id));
           filtered.forEach((item) => {
             const ownerId = item.user_id || item.userId;
-            if (!ownerId) return;
+            if (!ownerId || !configuredUserIds.has(ownerId)) return;
             const existing = byUser.get(ownerId) || { effectifTotal: 0, weightedOutput: 0 };
             existing.effectifTotal += Number(item.effectif || 0);
             existing.weightedOutput += Number(item.quantity || 0) * Number(item.gamme_time || 0);
@@ -1737,7 +1768,7 @@
           data: {
             labels: labels.length ? labels : ['Aucune donnée'],
             datasets: [{
-              label: 'Efficience moyenne (%)',
+              label: 'Efficience globale (%)',
               data: values.length ? values : [0],
               backgroundColor: colors.length ? colors : ['rgba(13, 50, 96, 0.8)'],
               borderColor: borders.length ? borders : ['rgba(255, 122, 26, 1)'],
@@ -1782,7 +1813,10 @@
         const rankingEl = document.getElementById('dashboardRankingContent');
         if (!rankingEl) return;
 
-        const sourceEntries = filteredEntries.filter((item) => currentUser.role === 'superadmin' || item.user_id === currentUser.id || item.userId === currentUser.id);
+        const configuredUserIds = new Set(getDashboardSelectableUsers().filter((user) => !user.unavailable).map((user) => user.id));
+        const sourceEntries = filteredEntries.filter((item) => currentUser.role === 'superadmin'
+          ? configuredUserIds.has(item.user_id || item.userId)
+          : item.user_id === currentUser.id || item.userId === currentUser.id);
 
         if (currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all') {
           const byUser = new Map();
@@ -1814,7 +1848,7 @@
           }).slice(0, 5);
 
           if (!rankingByUser.length) {
-            rankingEl.innerHTML = '<p class="dashboard-ranking-empty">Aucun plant saisi pour cette date.</p>';
+            rankingEl.innerHTML = '<p class="dashboard-ranking-empty">Aucun projet saisi pour cette date.</p>';
             return;
           }
 
@@ -2306,17 +2340,23 @@
             return;
           }
 
-          const headers = rows[0].map((header) => normalizeHeader(header));
+          const headerRowIndex = rows.slice(0, 10).findIndex((row) => {
+            const headers = row.map((header) => normalizeHeader(header));
+            return headers.some((h) => ['reference', 'ref', 'article'].includes(h))
+              && headers.some((h) => ['tg', 'tempsdegamme', 'gamme', 'tempsgamme', 'cycle', 'cycletime'].includes(h));
+          });
+
+          if (headerRowIndex === -1) {
+            if (statusEl) statusEl.textContent = 'En-têtes introuvables dans les 10 premières lignes. Ajoutez Reference et TG (ou Temps de gamme).';
+            return;
+          }
+
+          const headers = rows[headerRowIndex].map((header) => normalizeHeader(header));
           const refIndex = headers.findIndex((h) => ['reference', 'ref', 'article'].includes(h));
           const lineIndex = headers.findIndex((h) => ['ligne', 'line', 'lignes'].includes(h));
           const gammeIndex = headers.findIndex((h) => ['tg', 'tempsdegamme', 'gamme', 'tempsgamme', 'cycle', 'cycletime'].includes(h));
 
-          if (refIndex === -1 || gammeIndex === -1) {
-            if (statusEl) statusEl.textContent = 'Colonnes introuvables. Utilisez reference et temps de gamme.';
-            return;
-          }
-
-          const imported = rows.slice(1)
+          const imported = rows.slice(headerRowIndex + 1)
             .map((row) => {
               const reference = String(row[refIndex] || '').trim();
               const gammeTime = toNumber(row[gammeIndex]);
