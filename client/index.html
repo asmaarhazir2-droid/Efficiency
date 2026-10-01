@@ -2124,7 +2124,7 @@
         if (headerLabel) {
           let projectLabel = '';
           if (currentUser.role === 'superadmin') {
-            projectLabel = getDashboardOwnerId() === 'all' ? 'Tous les projets' : getUserLabelById(getDashboardOwnerId());
+            projectLabel = 'Plant';
           } else {
             const project = DASHBOARD_PROJECTS.find((item) => item.email.toLowerCase() === String(currentUser.email || '').toLowerCase());
             projectLabel = project?.label || currentUser.email?.split('@')[0] || '';
