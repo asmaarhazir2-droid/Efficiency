@@ -2047,7 +2047,7 @@
         const accountSelectHtml = currentUser.role === 'superadmin'
           ? `
             <label class="field-label mb-0">Projet:</label>
-            <select id="dashboardUserFilter" class="entry-select" style="max-width:240px">
+            <select id="dashboardUserFilter" class="entry-select" style="max-width:240px" onchange="applyDashboardFilters()">
               <option value="all" ${dashboardSelectedUserId === 'all' ? 'selected' : ''}>Tous les projets</option>
               ${selectableUsers.map((user) => `<option value="${user.id}" ${user.id === dashboardSelectedUserId ? 'selected' : ''} ${user.unavailable ? 'disabled' : ''}>${user.login}${user.unavailable ? ' (profil Firestore manquant)' : ''}</option>`).join('')}
             </select>
