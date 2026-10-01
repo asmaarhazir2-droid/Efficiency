@@ -1838,7 +1838,7 @@
               </div>
               <div class="dashboard-toolbar ${currentUser.role === 'superadmin' ? 'has-project-filter' : ''}">
                 <label class="field-label mb-0">Date:</label>
-                <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}">
+                <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}" onchange="applyDashboardFilters()">
                 ${accountSelectHtml}
                 <label class="field-label mb-0">RFC global (%):</label>
                 <input id="dashboardRfcFilter" class="entry-input" type="number" min="0" step="0.01" value="${defaultRfc.toFixed(2)}">
