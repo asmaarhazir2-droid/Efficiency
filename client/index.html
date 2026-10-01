@@ -1058,6 +1058,11 @@
         color: #b93832;
       }
 
+      .dashboard-summary-card-efficiency .dashboard-summary-delta {
+        white-space: normal;
+        line-height: 1.25;
+      }
+
       .dashboard-main-column > .dashboard-toolbar {
         display: grid;
         grid-template-columns: auto minmax(150px, 1fr) auto minmax(130px, 0.8fr) auto auto;
@@ -1958,6 +1963,8 @@
         const previousEffectif = previousEntries.reduce((sum, item) => sum + Number(item.effectif || 0), 0);
         const previousHours = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.gamme_time || 0), 0);
         const previousCadence = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        const previousEfficiency = previousEffectif > 0 ? (previousHours / (previousEffectif * WORKING_HOURS)) * 100 : 0;
+        const efficiencyVsYesterday = globalEfficiency - previousEfficiency;
         const hoursDelta = hoursProduced - previousHours;
         const cadenceDelta = cadenceTotal - previousCadence;
         const efficiencyDelta = globalEfficiency - globalRfc;
@@ -1981,7 +1988,7 @@
         }
         setDelta('summaryHoursDelta', `${formatSigned(hoursDelta, 2)} h vs hier`, hoursDelta);
         setDelta('summaryCadenceDelta', `${formatSigned(cadenceDelta)} vs hier`, cadenceDelta);
-        setDelta('summaryEfficiencyDelta', `${formatSigned(efficiencyDelta, 2)} pts vs RFC`, efficiencyDelta);
+        setDelta('summaryEfficiencyDelta', `${formatSigned(efficiencyDelta, 2)} pts vs RFC · ${formatSigned(efficiencyVsYesterday, 2)} pts vs hier`, efficiencyDelta);
 
         renderNavRanking(filtered);
 
