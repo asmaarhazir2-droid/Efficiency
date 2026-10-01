@@ -1010,33 +1010,6 @@
         color: #b45309;
       }
 
-      .ranking-panel-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-top: 10px;
-        padding-top: 11px;
-        border-top: 1px solid #e2e8f0;
-        color: #64748b;
-        font-size: 0.68rem;
-      }
-
-      .ranking-panel-footer-summary {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-      }
-
-      .ranking-panel-footer-summary i {
-        color: #15803d;
-        font-size: 0.75rem;
-      }
-
-      .ranking-panel-footer-label {
-        white-space: nowrap;
-      }
-
       .dashboard-ranking-empty {
         margin: 6px 0;
         color: #64748b;
@@ -2379,6 +2352,17 @@
         const aggregate = new Map();
         const rankingByProject = currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all';
 
+        if (rankingByProject) {
+          getDashboardSelectableUsers().forEach((user) => {
+            aggregate.set(user.id, {
+              label: user.login,
+              effectifTotal: 0,
+              weightedOutput: 0,
+              count: 0
+            });
+          });
+        }
+
         sourceEntries.forEach((item) => {
           const ownerId = item.user_id || item.userId;
           const key = rankingByProject
@@ -2406,7 +2390,7 @@
           if (dashboardRankingMode === 'ecart' && b.gap !== a.gap) return b.gap - a.gap;
           if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
           return a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
-        }).slice(0, 3);
+        });
 
         const formatNumber = (value, digits = 1) => Number(value || 0).toLocaleString('fr-FR', {
           minimumFractionDigits: digits,
@@ -2475,15 +2459,6 @@
           html = `<p class="dashboard-ranking-empty">${rankingByProject ? 'Aucun projet' : 'Aucune ligne'} saisi(e) pour cette date.</p>`;
         }
 
-        const aboveTarget = ranking.filter((item) => item.gap >= 0).length;
-        const unit = rankingByProject ? 'projet' : 'ligne';
-        const unitPlural = rankingByProject ? 'projets' : 'lignes';
-        html += `
-          <div class="ranking-panel-footer">
-            <span class="ranking-panel-footer-summary"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>${aboveTarget} ${aboveTarget === 1 ? unit : unitPlural} sur ${ranking.length} au-dessus de la cible</span>
-            <span class="ranking-panel-footer-label">Écart en pts</span>
-          </div>
-        `;
         rankingEl.innerHTML = html;
       }
 
