@@ -1167,26 +1167,78 @@
       /* Dashboard chrome: keep the chart and Ranking challenge section unchanged. */
       .workspace-topbar {
         min-height: 54px;
-        padding: 8px 22px;
+        padding: 9px 24px;
         margin-bottom: 14px;
-        background: #0d3260;
+        background: linear-gradient(105deg, #0b2a5b 0%, #123d70 100%);
         border-bottom: 2px solid #f97316;
-        box-shadow: 0 5px 16px rgba(15, 53, 103, 0.15);
+        box-shadow: 0 5px 16px rgba(15, 53, 103, 0.13);
       }
 
       .workspace-title {
+        min-width: 0;
         font-size: 1.28rem;
         font-weight: 750;
-        letter-spacing: 0.01em;
+        letter-spacing: -0.025em;
+      }
+
+      .workspace-title-icon {
+        display: inline-grid;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fdba74;
+        font-size: 1rem;
       }
 
       .workspace-date {
-        padding: 6px 11px;
-        border-color: rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.09);
-        color: #ffc083;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .workspace-date i {
+        color: #fdba74;
         font-size: 0.88rem;
+      }
+
+      .workspace-date {
+        padding: 7px 12px;
+        border-color: rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fed7aa;
+        font-size: 0.82rem;
         font-weight: 650;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 720px) {
+        .workspace-topbar {
+          gap: 10px;
+          padding: 9px 13px;
+        }
+
+        .workspace-title {
+          gap: 8px;
+          font-size: 1rem;
+        }
+
+        .workspace-title-icon {
+          width: 30px;
+          height: 30px;
+          flex-basis: 30px;
+          border-radius: 9px;
+        }
+
+        .workspace-date {
+          gap: 5px;
+          padding: 6px 9px;
+          font-size: 0.7rem;
+        }
       }
 
       .app-layout.nav-collapsed {
@@ -1518,7 +1570,7 @@
 
       <div id="appView" class="hidden">
         <header class="workspace-topbar">
-          <h1 class="workspace-title"><i class="bi bi-clipboard-data"></i> Efficiency tracking</h1>
+          <h1 class="workspace-title"><span class="workspace-title-icon"><i class="bi bi-clipboard-data" aria-hidden="true"></i></span> Efficiency tracking</h1>
           <div id="workspaceDate" class="workspace-date"></div>
         </header>
 
@@ -1971,7 +2023,7 @@
           month: 'long',
           year: 'numeric'
         }).format(new Date());
-        document.getElementById('workspaceDate').textContent = dateLabel;
+        document.getElementById('workspaceDate').innerHTML = `<i class="bi bi-calendar3" aria-hidden="true"></i><span>${dateLabel}</span>`;
       }
 
       async function clearSessionEntries() {
