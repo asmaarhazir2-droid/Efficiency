@@ -1955,6 +1955,7 @@
         selectedDay.setDate(selectedDay.getDate() - 1);
         const previousDate = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth() + 1).padStart(2, '0')}-${String(selectedDay.getDate()).padStart(2, '0')}`;
         const previousEntries = getDashboardEntries().filter((item) => getEntryDate(item) === previousDate);
+        const previousEffectif = previousEntries.reduce((sum, item) => sum + Number(item.effectif || 0), 0);
         const previousHours = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.gamme_time || 0), 0);
         const previousCadence = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
         const hoursDelta = previousHours > 0 ? ((hoursProduced - previousHours) / previousHours) * 100 : null;
@@ -1973,8 +1974,10 @@
         };
         const effectifDelta = document.getElementById('summaryEffectifDelta');
         if (effectifDelta) {
-          effectifDelta.textContent = 'stable';
-          effectifDelta.classList.remove('positive', 'negative');
+          const effectifChange = effectifTotal - previousEffectif;
+          effectifDelta.textContent = effectifChange === 0 ? 'stable' : `${formatSigned(effectifChange)} vs hier`;
+          effectifDelta.classList.toggle('positive', effectifChange > 0);
+          effectifDelta.classList.toggle('negative', effectifChange < 0);
         }
         setDelta('summaryHoursDelta', hoursDelta === null ? (hoursProduced > 0 ? 'Nouveau vs hier' : '0,0 % vs hier') : `${formatSigned(hoursDelta, 1)} % vs hier`, hoursDelta ?? (hoursProduced > 0 ? 1 : 0));
         setDelta('summaryCadenceDelta', `${formatSigned(cadenceDelta)} vs hier`, cadenceDelta);
