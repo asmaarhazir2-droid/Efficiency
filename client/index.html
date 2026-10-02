@@ -1167,11 +1167,11 @@
       /* Dashboard chrome: keep the chart and Ranking challenge section unchanged. */
       .workspace-topbar {
         position: relative;
-        min-height: 54px;
-        padding: 9px 24px;
+        min-height: 68px;
+        padding: 12px 28px;
         margin-bottom: 14px;
         background: linear-gradient(105deg, #0b2a5b 0%, #123d70 100%);
-        border-bottom: 2px solid #f97316;
+        border-bottom: 3px solid #f97316;
         box-shadow: 0 5px 16px rgba(15, 53, 103, 0.13);
       }
 
@@ -1199,15 +1199,17 @@
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        padding: 5px 13px;
-        border: 1px solid rgba(253, 186, 116, 0.35);
+        padding: 9px 22px;
+        border: 1px solid rgba(253, 186, 116, 0.55);
         border-radius: 999px;
-        background: rgba(253, 186, 116, 0.1);
-        color: #fed7aa;
-        font-size: 0.78rem;
-        font-weight: 750;
-        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.24), rgba(253, 186, 116, 0.1));
+        box-shadow: 0 5px 16px rgba(2, 16, 40, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        color: #fff7ed;
+        font-size: clamp(1rem, 1.4vw, 1.25rem);
+        font-weight: 850;
+        letter-spacing: 0.045em;
         text-transform: uppercase;
+        white-space: nowrap;
       }
 
       .workspace-date {
@@ -1222,20 +1224,22 @@
       }
 
       .workspace-date {
-        padding: 7px 12px;
-        border-color: rgba(255, 255, 255, 0.16);
+        padding: 8px 14px;
+        border-color: rgba(255, 255, 255, 0.18);
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.08);
         color: #fed7aa;
-        font-size: 0.82rem;
+        font-size: 0.86rem;
         font-weight: 650;
         white-space: nowrap;
       }
 
       @media (max-width: 720px) {
         .workspace-topbar {
-          gap: 10px;
-          padding: 9px 13px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 9px 8px;
+          padding: 10px 12px;
         }
 
         .workspace-title {
@@ -1251,13 +1255,21 @@
         }
 
         .workspace-center-label {
-          display: none;
+          position: static;
+          grid-column: 1 / -1;
+          justify-self: center;
+          transform: none;
+          max-width: 100%;
+          padding: 6px 10px;
+          font-size: 0.72rem;
+          letter-spacing: 0.015em;
+          text-align: center;
         }
 
         .workspace-date {
           gap: 5px;
-          padding: 6px 9px;
-          font-size: 0.7rem;
+          padding: 5px 8px;
+          font-size: 0.66rem;
         }
       }
 
