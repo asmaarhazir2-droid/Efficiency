@@ -2356,9 +2356,11 @@
         const effectifTotal = filtered.reduce((sum, item) => sum + Number(item.effectif || 0), 0);
         const cadenceTotal = filtered.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
         const weightedOutput = filtered.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.gamme_time || 0)), 0);
-        const hoursProduced = weightedOutput;
-        const availableHours = effectifTotal * WORKING_HOURS;
-        const globalEfficiency = availableHours > 0 ? (weightedOutput / availableHours) * 100 : 0;
+        const includeCraHours = currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all';
+        const craHoursForDate = includeCraHours ? getCraHours(selectedDate) : null;
+        const hoursProduced = weightedOutput + Number(craHoursForDate?.produced_hours || 0);
+        const availableHours = effectifTotal * WORKING_HOURS + Number(craHoursForDate?.presence_hours || 0);
+        const globalEfficiency = availableHours > 0 ? (hoursProduced / availableHours) * 100 : 0;
 
         const summaryEffectif = document.getElementById('summaryEffectif');
         const summaryHours = document.getElementById('summaryHours');
@@ -2379,9 +2381,12 @@
         const previousDate = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth() + 1).padStart(2, '0')}-${String(selectedDay.getDate()).padStart(2, '0')}`;
         const previousEntries = getDashboardEntries().filter((item) => getEntryDate(item) === previousDate);
         const previousEffectif = previousEntries.reduce((sum, item) => sum + Number(item.effectif || 0), 0);
-        const previousHours = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.gamme_time || 0), 0);
+        const previousCraHours = includeCraHours ? getCraHours(previousDate) : null;
+        const previousHours = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.gamme_time || 0), 0)
+          + Number(previousCraHours?.produced_hours || 0);
         const previousCadence = previousEntries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-        const previousEfficiency = previousEffectif > 0 ? (previousHours / (previousEffectif * WORKING_HOURS)) * 100 : 0;
+        const previousPresenceHours = previousEffectif * WORKING_HOURS + Number(previousCraHours?.presence_hours || 0);
+        const previousEfficiency = previousPresenceHours > 0 ? (previousHours / previousPresenceHours) * 100 : 0;
         const efficiencyVsYesterday = globalEfficiency - previousEfficiency;
         const hoursDelta = hoursProduced - previousHours;
         const cadenceDelta = cadenceTotal - previousCadence;
