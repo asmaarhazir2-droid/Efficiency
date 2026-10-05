@@ -1068,6 +1068,26 @@
         max-height: 320px;
       }
 
+      .cra-editor {
+        width: min(480px, calc(100vw - 32px));
+        padding: 24px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        color: #0b2a5b;
+        background: #ffffff;
+        box-shadow: 0 24px 64px rgba(11, 42, 91, 0.2);
+      }
+
+      .cra-editor::backdrop { background: rgba(11, 42, 91, 0.5); }
+      .cra-editor h2 { margin: 0 0 8px; font-size: 1.3rem; }
+      .cra-editor label { font-weight: 700; font-size: 0.88rem; }
+      .cra-editor input { border: 1px solid #cbd5e1; }
+      .cra-editor-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+      .cra-editor-actions button { padding: 10px 16px; border: 0; border-radius: 9px; cursor: pointer; }
+      .cra-editor-actions button[type="submit"] { background: #0b2a5b; color: #fff; }
+      .cra-editor-actions button[type="button"] { background: #f1f5f9; color: #0b2a5b; }
+      .cra-chart-help { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; font-size: 0.8rem; color: #526782; }
+
       .simple-table {
         width: 100%;
         border-collapse: collapse;
@@ -1653,6 +1673,25 @@
       </div>
     </div>
 
+    <dialog id="craHoursDialog" class="cra-editor" aria-labelledby="craHoursTitle">
+      <form id="craHoursForm" onsubmit="event.preventDefault(); saveCraHours();">
+        <h2 id="craHoursTitle">CRA &amp; WPA — Saisie des heures</h2>
+        <p class="entry-help">Date : <span id="craHoursDateLabel"></span></p>
+        <input id="craHoursDate" type="hidden">
+        <label for="craProducedHours">Heures produites (h)</label>
+        <input id="craProducedHours" type="number" min="0" step="any" required oninput="updateCraEfficiencyPreview()">
+        <label for="craPresenceHours">Heures de présence (h)</label>
+        <input id="craPresenceHours" type="number" min="0.000001" step="any" required oninput="updateCraEfficiencyPreview()">
+        <div class="result-box">Efficience : <strong id="craEfficiencyPreview" aria-live="polite">—</strong></div>
+        <p class="entry-help">Efficience (%) = heures produites / heures de présence × 100.</p>
+        <p id="craHoursError" class="error" role="alert"></p>
+        <div class="cra-editor-actions">
+          <button type="button" onclick="document.getElementById('craHoursDialog').close()">Annuler</button>
+          <button id="craHoursSave" type="submit">Enregistrer</button>
+        </div>
+      </form>
+    </dialog>
+
     <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore-compat.js"></script>
@@ -1688,8 +1727,11 @@
       let dashboardRankingMode = 'efficiency';
       let dashboardSelectedUserId = '';
       let dashboardUsers = [];
+      let craProjectHours = [];
+      let craHoursLoadError = '';
       let navigationCollapsed = false;
       const WORKING_HOURS = 8;
+      const CRA_PROJECT_LABEL = 'CRA & WPA';
       const DASHBOARD_PROJECTS = [
         { label: 'X1310 PDB', email: 'pdb@leoni.com' },
         { label: 'X1310 Lowdash', email: 'lowdash@leoni.com' },
@@ -1822,6 +1864,9 @@
           ? getDashboardEntries()
           : appEntries.filter((item) => item.user_id === currentUser?.id || item.userId === currentUser?.id);
         const dates = sourceEntries.map((item) => getEntryDate(item)).filter(Boolean);
+        if (currentUser?.role === 'superadmin' && getDashboardOwnerId() === 'all') {
+          dates.push(...craProjectHours.map((item) => item.entry_date));
+        }
         dates.push(getTodayKey());
         return [...new Set(dates)].sort((a, b) => b.localeCompare(a));
       }
@@ -2080,6 +2125,8 @@
           appDropdowns = [...demoState.dropdowns];
           appEntries = [...demoState.entries];
           dashboardUsers = demoState.users || [];
+          craProjectHours = currentUser.role === 'superadmin' ? (demoState.craProjectHours || []) : [];
+          craHoursLoadError = '';
           appGammes = [...(demoState.gammes || []).filter((item) => item.user_id === currentUser?.id)];
           appLines = getOwnedLinesFromState().map((item) => item.name).filter(Boolean);
           if (!appLines.length) {
@@ -2092,8 +2139,20 @@
         if (isSuperAdmin) {
           const usersSnapshot = await db.collection('users').get();
           dashboardUsers = usersSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+          try {
+            const hoursSnapshot = await db.collection('admin_project_hours').get();
+            craProjectHours = hoursSnapshot.docs.map((item) => ({ ...item.data(), id: item.id }));
+            craHoursLoadError = '';
+          } catch (error) {
+            craProjectHours = [];
+            craHoursLoadError = error.code === 'permission-denied'
+              ? 'CRA & WPA : publie les nouvelles règles Firestore pour lire et enregistrer les heures.'
+              : 'CRA & WPA : impossible de charger les heures. Réessaie après avoir actualisé la page.';
+          }
         } else {
           dashboardUsers = [];
+          craProjectHours = [];
+          craHoursLoadError = '';
         }
         const dropdownQuery = isSuperAdmin
           ? db.collection('dropdown_options')
@@ -2199,6 +2258,13 @@
               </div>
               <div class="chart-box">
                 <canvas id="dashboardEfficiencyChart" class="chart-canvas"></canvas>
+                ${currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all' ? `
+                  <div class="cra-chart-help">
+                    <button type="button" onclick="openCraHoursEditor()">Saisir CRA &amp; WPA</button>
+                    <span>Double-clique sur CRA &amp; WPA dans le graphique pour saisir les heures.</span>
+                  </div>
+                  <p id="craHoursLoadStatus" class="error" role="status"></p>
+                ` : ''}
               </div>
             </div>
             <aside class="dashboard-ranking-column">
@@ -2223,6 +2289,8 @@
           html += '<p class="muted">Aucune saisie d\'efficience pour le moment.</p>';
         }
         document.getElementById('dashboardContent').innerHTML = html;
+        const craLoadStatus = document.getElementById('craHoursLoadStatus');
+        if (craLoadStatus) craLoadStatus.textContent = craHoursLoadError;
         onDashboardDateChange();
       }
 
@@ -2413,7 +2481,13 @@
               label,
               value: Number(efficiency.toFixed(2))
             };
-          }).sort((a, b) => b.value - a.value);
+          });
+          const craHours = getCraHours(selectedDate);
+          accountMetrics.push({
+            label: CRA_PROJECT_LABEL,
+            value: craHours ? Number(calculateHoursEfficiency(craHours.produced_hours, craHours.presence_hours).toFixed(2)) : 0
+          });
+          accountMetrics.sort((a, b) => b.value - a.value);
 
           labels = accountMetrics.map((item) => item.label);
           values = accountMetrics.map((item) => item.value);
@@ -2454,6 +2528,14 @@
 
         const canvas = document.getElementById('dashboardEfficiencyChart');
         if (!canvas || typeof Chart === 'undefined') return;
+        canvas.ondblclick = (event) => {
+          if (currentUser.role !== 'superadmin' || getDashboardOwnerId() !== 'all' || !dashboardChart) return;
+          const position = Chart.helpers.getRelativePosition(event, dashboardChart);
+          const area = dashboardChart.chartArea;
+          if (position.x < area.left || position.x > area.right || position.y < area.top || position.y > dashboardChart.height) return;
+          const index = dashboardChart.scales.x.getValueForPixel(position.x);
+          if (dashboardChart.data.labels[index] === CRA_PROJECT_LABEL) openCraHoursEditor();
+        };
 
         const ctx = canvas.getContext('2d');
         if (dashboardChart) {
@@ -2555,6 +2637,15 @@
                   },
                   afterBody(items) {
                     if (currentUser.role !== 'superadmin' || getDashboardOwnerId() !== 'all' || !items.length) return [];
+                    if (items[0].label === CRA_PROJECT_LABEL) {
+                      const hours = getCraHours(selectedDate);
+                      return hours ? [
+                        `Heures produites : ${Number(hours.produced_hours).toLocaleString('fr-FR')} h`,
+                        `Heures de présence : ${Number(hours.presence_hours).toLocaleString('fr-FR')} h`,
+                        `Efficience : ${calculateHoursEfficiency(hours.produced_hours, hours.presence_hours).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`,
+                        'Double-clique pour modifier les heures.'
+                      ] : ['Aucune saisie : double-clique pour saisir les heures.'];
+                    }
                     const lineMetrics = projectLineEfficiencies.get(items[0].label) || [];
                     if (!lineMetrics.length) return ['Aucune ligne saisie pour ce projet à cette date.'];
                     return [
@@ -2720,6 +2811,89 @@
         }
 
         rankingEl.innerHTML = html;
+      }
+
+      function calculateHoursEfficiency(producedHours, presenceHours) {
+        const produced = Number(producedHours);
+        const presence = Number(presenceHours);
+        return Number.isFinite(produced) && Number.isFinite(presence) && produced >= 0 && presence > 0
+          ? (produced / presence) * 100
+          : 0;
+      }
+
+      function getCraHours(date) {
+        return craProjectHours.find((item) => item.project_id === 'cra-wpa' && item.entry_date === date) || null;
+      }
+
+      function openCraHoursEditor() {
+        if (currentUser?.role !== 'superadmin') return;
+        const date = dashboardSelectedDate || getTodayKey();
+        const hours = getCraHours(date);
+        document.getElementById('craHoursDate').value = date;
+        document.getElementById('craHoursDateLabel').textContent = formatDateLabel(date);
+        document.getElementById('craProducedHours').value = hours?.produced_hours ?? '';
+        document.getElementById('craPresenceHours').value = hours?.presence_hours ?? '';
+        document.getElementById('craHoursError').textContent = craHoursLoadError;
+        updateCraEfficiencyPreview();
+        document.getElementById('craHoursDialog').showModal();
+      }
+
+      function updateCraEfficiencyPreview() {
+        const producedInput = document.getElementById('craProducedHours');
+        const presenceInput = document.getElementById('craPresenceHours');
+        const produced = toNumber(producedInput.value);
+        const presence = toNumber(presenceInput.value);
+        const valid = producedInput.value !== '' && presenceInput.value !== ''
+          && Number.isFinite(produced) && produced >= 0 && Number.isFinite(presence) && presence > 0;
+        document.getElementById('craEfficiencyPreview').textContent = valid
+          ? `${calculateHoursEfficiency(produced, presence).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`
+          : '—';
+      }
+
+      async function saveCraHours() {
+        if (currentUser?.role !== 'superadmin') return;
+        const errorEl = document.getElementById('craHoursError');
+        const button = document.getElementById('craHoursSave');
+        if (button.disabled) return;
+        const form = document.getElementById('craHoursForm');
+        if (!form.reportValidity()) return;
+        const producedHours = toNumber(document.getElementById('craProducedHours').value);
+        const presenceHours = toNumber(document.getElementById('craPresenceHours').value);
+        const date = document.getElementById('craHoursDate').value;
+        const efficiency = calculateHoursEfficiency(producedHours, presenceHours);
+        if (!Number.isFinite(producedHours) || producedHours < 0 || !Number.isFinite(presenceHours)
+            || presenceHours <= 0 || !Number.isFinite(efficiency) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          errorEl.textContent = 'Saisis des heures valides : produites ≥ 0 et présence > 0.';
+          return;
+        }
+        const id = `cra-wpa_${date}`;
+        const payload = {
+          project_id: 'cra-wpa',
+          entry_date: date,
+          produced_hours: producedHours,
+          presence_hours: presenceHours,
+          updated_by: currentUser.id
+        };
+        button.disabled = true;
+        errorEl.textContent = '';
+        try {
+          if (useFirebase) {
+            await db.collection('admin_project_hours').doc(id).set(payload);
+          } else {
+            demoState.craProjectHours = [...(demoState.craProjectHours || []).filter((item) => item.id !== id), { id, ...payload }];
+            saveState();
+          }
+          craProjectHours = [...craProjectHours.filter((item) => item.id !== id), { id, ...payload }];
+          craHoursLoadError = '';
+          document.getElementById('craHoursDialog').close();
+          renderDashboard();
+        } catch (error) {
+          errorEl.textContent = error.code === 'permission-denied'
+            ? 'Enregistrement refusé : publie les nouvelles règles Firestore et vérifie ton rôle superadmin.'
+            : `Impossible d’enregistrer les heures : ${error.message || error}`;
+        } finally {
+          button.disabled = false;
+        }
       }
 
       function onDashboardRfcChange() {
