@@ -2746,7 +2746,27 @@
             gap: efficiency - targetRfc,
             gapYesterday: previousEfficiency === null ? null : efficiency - previousEfficiency
           };
-        }).sort((a, b) => {
+        });
+
+        if (rankingByProject) {
+          const craHours = getCraHours(dashboardSelectedDate || getTodayKey());
+          if (craHours) {
+            const efficiency = calculateHoursEfficiency(craHours.produced_hours, craHours.presence_hours);
+            const previousCraHours = getCraHours(previousDate);
+            const previousEfficiency = previousCraHours
+              ? calculateHoursEfficiency(previousCraHours.produced_hours, previousCraHours.presence_hours)
+              : null;
+            ranking.push({
+              label: CRA_PROJECT_LABEL,
+              count: 1,
+              efficiency,
+              gap: efficiency - targetRfc,
+              gapYesterday: previousEfficiency === null ? null : efficiency - previousEfficiency
+            });
+          }
+        }
+
+        ranking.sort((a, b) => {
           if (dashboardRankingMode === 'ecart' && b.gap !== a.gap) return b.gap - a.gap;
           if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
           return a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
