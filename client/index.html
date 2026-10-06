@@ -2957,6 +2957,7 @@
       async function addManagedLine() {
         const inputEl = document.getElementById('managedLineInput');
         const statusEl = document.getElementById('lineManageStatus');
+        const addButton = document.getElementById('managedLineAddButton');
         const value = String(inputEl?.value || '').trim();
         if (!value) {
           if (statusEl) statusEl.textContent = 'Saisis un nom de ligne.';
@@ -2977,28 +2978,42 @@
           nextLines = [...currentLines, value];
         }
 
-        appLines = [...new Set(nextLines)].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+        const sortedNextLines = [...new Set(nextLines)].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+        const previousEditingLine = editingManagedLine;
+        if (addButton) addButton.disabled = true;
+        if (statusEl) statusEl.textContent = 'Enregistrement…';
 
-        if (!useFirebase) {
-          persistOwnedLines(appLines);
-          saveState();
-        } else {
-          if (editingManagedLine) {
-            const oldDocId = `${currentUser.id}_${editingManagedLine.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+        try {
+          if (!useFirebase) {
+            appLines = sortedNextLines;
+            persistOwnedLines(appLines);
+            saveState();
+          } else {
+            if (!currentUser?.id) throw new Error('Compte non connecté. Reconnecte-toi puis réessaie.');
+            const oldDocId = previousEditingLine
+              ? `${currentUser.id}_${previousEditingLine.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`
+              : '';
             const newDocId = `${currentUser.id}_${value.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-            if (oldDocId !== newDocId) {
+            await db.collection('production_lines').doc(newDocId).set({ name: value, user_id: currentUser.id });
+            if (oldDocId && oldDocId !== newDocId) {
               await db.collection('production_lines').doc(oldDocId).delete();
             }
           }
-          await db.collection('production_lines').doc(`${currentUser.id}_${value.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`).set({ name: value, user_id: currentUser.id });
-        }
 
-        const previousEditingLine = editingManagedLine;
-        editingManagedLine = '';
-        if (inputEl) inputEl.value = '';
-        await refreshDataAndRender();
-        navigateTo('admin');
-        if (statusEl) statusEl.textContent = previousEditingLine ? `Ligne modifiée: ${value}` : `Ligne ajoutée: ${value}`;
+          editingManagedLine = '';
+          await refreshDataAndRender();
+          navigateTo('admin');
+          const refreshedStatus = document.getElementById('lineManageStatus');
+          if (refreshedStatus) refreshedStatus.textContent = previousEditingLine ? `Ligne modifiée : ${value}` : `Ligne ajoutée : ${value}`;
+        } catch (error) {
+          editingManagedLine = previousEditingLine;
+          const message = error.code === 'permission-denied'
+            ? 'Enregistrement refusé par Firestore. Publie les règles actuelles de firestore.rules et vérifie que ton compte a le rôle user.'
+            : `Impossible d’enregistrer la ligne : ${error.message || error}`;
+          if (statusEl) statusEl.textContent = message;
+        } finally {
+          if (addButton) addButton.disabled = false;
+        }
       }
 
       function startManagedLineEdit(line) {
@@ -3040,19 +3055,28 @@
         const statusEl = document.getElementById('lineManageStatus');
         const currentLines = Array.isArray(appLines) ? appLines : [];
         const nextLines = currentLines.filter((item) => String(item).trim().toLowerCase() !== String(line || '').trim().toLowerCase());
-        appLines = nextLines;
 
-        if (!useFirebase) {
-          persistOwnedLines(appLines);
-          saveState();
-        } else {
-          const docId = `${currentUser.id}_${String(line || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-          await db.collection('production_lines').doc(docId).delete();
+        try {
+          if (!useFirebase) {
+            appLines = nextLines;
+            persistOwnedLines(appLines);
+            saveState();
+          } else {
+            if (!currentUser?.id) throw new Error('Compte non connecté. Reconnecte-toi puis réessaie.');
+            const docId = `${currentUser.id}_${String(line || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+            await db.collection('production_lines').doc(docId).delete();
+          }
+
+          await refreshDataAndRender();
+          navigateTo('admin');
+          const refreshedStatus = document.getElementById('lineManageStatus');
+          if (refreshedStatus) refreshedStatus.textContent = `Ligne supprimée : ${line}`;
+        } catch (error) {
+          const message = error.code === 'permission-denied'
+            ? 'Suppression refusée par Firestore. Publie les règles actuelles de firestore.rules et vérifie que cette ligne appartient à ton compte.'
+            : `Impossible de supprimer la ligne : ${error.message || error}`;
+          if (statusEl) statusEl.textContent = message;
         }
-
-        await refreshDataAndRender();
-        navigateTo('admin');
-        if (statusEl) statusEl.textContent = `Ligne supprimée: ${line}`;
       }
 
       function renderAdmin() {
