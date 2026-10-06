@@ -586,8 +586,8 @@
 
       .dashboard-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 24px;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 16px;
         align-items: start;
       }
 
@@ -597,8 +597,9 @@
       }
 
       .dashboard-ranking-column {
-        position: static;
-        min-width: 0;
+        position: sticky;
+        top: 16px;
+        min-width: 340px;
       }
 
       .dashboard-ranking-column .nav-ranking-panel {
@@ -648,13 +649,10 @@
       }
 
       .chart-box {
-        width: 100%;
-        min-height: 500px;
-        box-sizing: border-box;
         background: #ffffff;
         border: 1px solid #e3e9f3;
         border-radius: 14px;
-        padding: 18px;
+        padding: 12px;
         margin: 10px 0 14px;
       }
 
@@ -1066,21 +1064,8 @@
       }
 
       .chart-canvas {
-        display: block;
         width: 100%;
-        height: 460px !important;
-        max-height: none;
-      }
-
-      @media (max-width: 720px) {
-        .chart-box {
-          min-height: 380px;
-          padding: 10px;
-        }
-
-        .chart-canvas {
-          height: 340px !important;
-        }
+        max-height: 320px;
       }
 
       .cra-editor {
