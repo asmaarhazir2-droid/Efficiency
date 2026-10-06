@@ -649,6 +649,8 @@
       }
 
       .chart-box {
+        min-height: max(420px, calc(100vh - 360px));
+        box-sizing: border-box;
         background: #ffffff;
         border: 1px solid #e3e9f3;
         border-radius: 14px;
@@ -1065,7 +1067,18 @@
 
       .chart-canvas {
         width: 100%;
-        max-height: 320px;
+        height: max(390px, calc(100vh - 430px)) !important;
+        max-height: none;
+      }
+
+      @media (max-width: 720px) {
+        .chart-box {
+          min-height: 420px;
+        }
+
+        .chart-canvas {
+          height: 390px !important;
+        }
       }
 
       .cra-editor {
