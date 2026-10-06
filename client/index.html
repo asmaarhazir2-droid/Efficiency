@@ -822,7 +822,12 @@
         display: flex;
         align-items: center;
         min-width: 0;
+        flex: 1 1 auto;
         gap: 9px;
+      }
+
+      .ranking-champion-person > div:last-child {
+        min-width: 0;
       }
 
       .ranking-champion-medal {
@@ -838,12 +843,16 @@
       }
 
       .ranking-champion-name {
+        display: -webkit-box;
         overflow: hidden;
         color: #0b2a5b;
         font-size: 0.86rem;
         font-weight: 650;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        line-height: 1.3;
+        line-clamp: 2;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
       }
 
       .ranking-champion-subtitle {
@@ -2119,6 +2128,7 @@
 
       async function clearSessionEntries() {
         if (!currentUser) return;
+        if (!window.confirm('Supprimer définitivement toutes les saisies de ton compte ? Cette action est irréversible.')) return;
 
         if (!useFirebase) {
           demoState.entries = demoState.entries.filter((entry) => entry.user_id !== currentUser.id && entry.userId !== currentUser.id);
@@ -2190,13 +2200,29 @@
       }
 
       async function refreshDataAndRender() {
-        await loadAppData();
-        renderDashboard();
-        renderSuivi();
-        renderAdmin();
-        renderAddData();
-        renderSuperAdmin();
-        navigateTo('dashboard');
+        const loadError = (error) => {
+          console.error('Erreur de chargement des données Firebase:', error);
+          const message = error.code === 'permission-denied'
+            ? 'Lecture Firestore refusée : vérifie les règles et le profil users/{UID} du compte connecté.'
+            : `Impossible de charger les données. Elles ne sont pas supprimées : ${error.message || error}`;
+          const errorEl = document.getElementById('dashboardLoadError');
+          if (errorEl) errorEl.textContent = message;
+          else window.alert(message);
+        };
+
+        try {
+          await loadAppData();
+          renderDashboard();
+          renderSuivi();
+          renderAdmin();
+          renderAddData();
+          renderSuperAdmin();
+          navigateTo('dashboard');
+          const errorEl = document.getElementById('dashboardLoadError');
+          if (errorEl) errorEl.textContent = '';
+        } catch (error) {
+          loadError(error);
+        }
       }
 
       function renderDashboard() {
@@ -2269,6 +2295,7 @@
                 <button class="dashboard-filter-apply" type="button" onclick="applyDashboardFilters()">Appliquer</button>
                 <button class="dashboard-filter-reset" type="button" onclick="resetDashboardFilters()">Réinitialiser</button>
               </div>
+              <p id="dashboardLoadError" class="error" role="alert"></p>
               <div class="chart-box">
                 <canvas id="dashboardEfficiencyChart" class="chart-canvas"></canvas>
                 ${currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all' ? `
@@ -3190,7 +3217,7 @@
             </div>
 
             <div id="efficiencyCompareStatus" class="status-chip status-good"><i class="bi bi-check-circle"></i>RFC inférieur ou égal à l'efficience (Vert)</div>
-            <button type="submit"><i class="bi bi-check2-circle"></i>Enregistrer la saisie</button>
+            <button id="saveEfficiencyEntryButton" type="submit"><i class="bi bi-check2-circle"></i>Enregistrer la saisie</button>
             <div id="entryStatus" class="entry-help mt-2"></div>
           </form>
         `;
@@ -3299,6 +3326,8 @@
         const rfc = Number(document.getElementById('entryRfc').value);
         const entryDate = document.getElementById('entryDate').value || getTodayKey();
         const statusEl = document.getElementById('entryStatus');
+        const saveButton = document.getElementById('saveEfficiencyEntryButton');
+        if (saveButton?.disabled) return;
 
         const items = getReferenceItemValues().filter((item) => item.reference);
         if (!items.length) {
@@ -3355,18 +3384,35 @@
           created_at: new Date().toISOString()
         };
 
-        if (!useFirebase) {
-          demoState.entries.push({ id: `e${Date.now()}`, ...payload });
-          saveState();
-        } else {
-          await db.collection('entries').add(payload);
+        if (saveButton) saveButton.disabled = true;
+        if (statusEl) statusEl.textContent = 'Enregistrement…';
+        try {
+          if (!useFirebase) {
+            demoState.entries.push({ id: `e${Date.now()}`, ...payload });
+            saveState();
+          } else {
+            await db.collection('entries').add(payload);
+          }
+        } catch (error) {
+          const message = error.code === 'permission-denied'
+            ? 'FireStore refuse la saisie. Vérifie les règles entries et que user_id correspond à ton UID Firebase.'
+            : `Saisie non enregistrée : ${error.message || error}`;
+          if (statusEl) statusEl.textContent = message;
+          if (saveButton) saveButton.disabled = false;
+          return;
         }
 
-        await refreshDataAndRender();
-        navigateTo('add-data');
-        const refreshedStatus = document.getElementById('entryStatus');
-        if (refreshedStatus) {
-          refreshedStatus.textContent = `Saisie enregistrée. Efficience: ${efficiency.toFixed(2)} %`;
+        try {
+          await refreshDataAndRender();
+          navigateTo('add-data');
+          const refreshedStatus = document.getElementById('entryStatus');
+          if (refreshedStatus) refreshedStatus.textContent = `Saisie enregistrée. Efficience: ${efficiency.toFixed(2)} %`;
+        } catch (error) {
+          const refreshedStatus = document.getElementById('entryStatus');
+          if (refreshedStatus) refreshedStatus.textContent = `Saisie enregistrée, mais les données ne se sont pas rechargées. Actualise la page : ${error.message || error}`;
+        } finally {
+          const refreshedButton = document.getElementById('saveEfficiencyEntryButton');
+          if (refreshedButton) refreshedButton.disabled = false;
         }
       }
 
@@ -3548,6 +3594,43 @@
         initFirebaseIfPossible();
         navigationCollapsed = true;
         localStorage.setItem('efficiency_nav_collapsed', '1');
+
+        if (useFirebase && auth) {
+          auth.onAuthStateChanged(async (firebaseUser) => {
+            if (!firebaseUser) {
+              currentUser = null;
+              localStorage.removeItem('efficiency-user');
+              setAuthArea();
+              showLogin();
+              return;
+            }
+
+            try {
+              const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+              if (!userDoc.exists) {
+                throw new Error(`Profil Firestore absent pour le compte ${firebaseUser.email}.`);
+              }
+              const userData = userDoc.data();
+              currentUser = {
+                id: firebaseUser.uid,
+                login: firebaseUser.email,
+                email: firebaseUser.email,
+                role: userData.role || 'user'
+              };
+              localStorage.setItem('efficiency-user', JSON.stringify(currentUser));
+              setAuthArea();
+              showApp();
+            } catch (error) {
+              currentUser = null;
+              localStorage.removeItem('efficiency-user');
+              setAuthArea();
+              showLogin();
+              document.getElementById('loginError').textContent = `Session non chargée : ${error.message || error}`;
+            }
+          });
+          return;
+        }
+
         const savedUser = localStorage.getItem('efficiency-user');
         if (savedUser) {
           currentUser = JSON.parse(savedUser);
