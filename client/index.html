@@ -1082,11 +1082,13 @@
 
       @media (max-width: 720px) {
         .chart-box {
-          min-height: 420px;
+          min-height: 360px;
+          padding: 8px;
+          overflow: hidden;
         }
 
         .chart-canvas {
-          height: 390px !important;
+          height: 340px !important;
         }
       }
 
@@ -2681,19 +2683,23 @@
             if (!barDataset || !meta || meta.hidden) return;
 
             const { ctx: chartContext } = chart;
+            const compactLayout = chart.width < 600;
             chartContext.save();
             chartContext.fillStyle = '#ffffff';
             chartContext.textAlign = 'center';
             chartContext.textBaseline = 'middle';
-            chartContext.font = '800 20px "Plus Jakarta Sans", sans-serif';
+            chartContext.font = compactLayout
+              ? '800 12px "Plus Jakarta Sans", sans-serif'
+              : '800 20px "Plus Jakarta Sans", sans-serif';
 
             meta.data.forEach((barElement, index) => {
               const value = Number(barDataset.data[index] || 0);
               if (!Number.isFinite(value) || value <= 0) return;
+              if (compactLayout && barElement.width < 30) return;
 
               const centerX = barElement.x;
               const centerY = (barElement.y + barElement.base) / 2;
-              chartContext.fillText(`${value.toFixed(2)}%`, centerX, centerY);
+              chartContext.fillText(`${value.toFixed(compactLayout ? 1 : 2)}%`, centerX, centerY);
             });
 
             chartContext.restore();
@@ -2749,7 +2755,24 @@
                 title: { display: true, text: 'Valeurs (%)' }
               },
               x: {
-                title: { display: true, text: projectLineValues ? 'Projet et lignes de production' : 'Lignes' }
+                title: {
+                  display: true,
+                  text: projectLineValues ? 'Projet et lignes de production' : 'Lignes',
+                  font: { size: 12 }
+                },
+                ticks: {
+                  minRotation: 0,
+                  maxRotation: 0,
+                  autoSkip: false,
+                  font: { size: window.innerWidth < 600 ? 9 : 11 },
+                  callback(value) {
+                    const label = String(this.getLabelForValue(value));
+                    if (window.innerWidth >= 600) return label;
+                    const parts = label.split(/\s+[–—-]\s+/).filter(Boolean);
+                    if (parts.length > 1) return parts;
+                    return label.match(/.{1,14}(?:\s|$)/g)?.map((part) => part.trim()).filter(Boolean) || label;
+                  }
+                }
               }
             },
             plugins: {
