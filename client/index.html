@@ -3008,7 +3008,7 @@
         } catch (error) {
           editingManagedLine = previousEditingLine;
           const message = error.code === 'permission-denied'
-            ? 'Enregistrement refusé par Firestore. Publie les règles actuelles de firestore.rules et vérifie que ton compte a le rôle user.'
+            ? 'Firestore refuse cette ligne. Vérifie que les règles production_lines sont publiées et que user_id correspond à l’UID du compte Firebase connecté.'
             : `Impossible d’enregistrer la ligne : ${error.message || error}`;
           if (statusEl) statusEl.textContent = message;
         } finally {
@@ -3073,7 +3073,7 @@
           if (refreshedStatus) refreshedStatus.textContent = `Ligne supprimée : ${line}`;
         } catch (error) {
           const message = error.code === 'permission-denied'
-            ? 'Suppression refusée par Firestore. Publie les règles actuelles de firestore.rules et vérifie que cette ligne appartient à ton compte.'
+            ? 'Firestore refuse la suppression. Vérifie que les règles production_lines sont publiées et que le user_id du document correspond à l’UID du compte Firebase connecté.'
             : `Impossible de supprimer la ligne : ${error.message || error}`;
           if (statusEl) statusEl.textContent = message;
         }
