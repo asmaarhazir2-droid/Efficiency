@@ -1134,7 +1134,12 @@
 
       @media (max-width: 720px) {
         .app-layout {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 12px;
+        }
+
+        .app-layout.nav-collapsed {
+          grid-template-columns: minmax(0, 1fr);
         }
 
         .dashboard-layout {
@@ -1147,6 +1152,39 @@
 
         .side-menu {
           position: static;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          width: 100%;
+          padding: 8px;
+          overflow-x: auto;
+          border-radius: 14px;
+        }
+
+        .side-menu-header,
+        .side-menu .menu-separator,
+        .side-menu .menu-btn .menu-text {
+          display: none;
+        }
+
+        .side-menu .menu-btn,
+        .side-menu.collapsed .menu-btn {
+          display: inline-grid;
+          flex: 0 0 42px;
+          width: 42px;
+          height: 42px;
+          min-height: 42px;
+          place-items: center;
+          margin: 0;
+          padding: 0;
+          border-radius: 11px;
+          text-align: center;
+        }
+
+        .side-menu .menu-btn i,
+        .side-menu.collapsed .menu-btn i {
+          margin: 0;
+          font-size: 1rem;
         }
 
         .workspace-topbar {
@@ -1521,10 +1559,26 @@
         }
       }
 
+      @media (min-width: 721px) and (max-width: 1100px) {
+        .dashboard-layout {
+          grid-template-columns: minmax(0, 1fr) minmax(270px, 32vw);
+          gap: 12px;
+        }
+
+        .dashboard-ranking-column {
+          min-width: 0;
+        }
+
+        .dashboard-main-column > .dashboard-toolbar,
+        .dashboard-main-column > .dashboard-toolbar.has-project-filter {
+          grid-template-columns: auto minmax(100px, 1fr) auto minmax(120px, 1fr);
+        }
+      }
+
       @media (max-width: 720px) {
         .workspace-topbar {
           margin: 0 -22px 14px;
-          padding: 10px 16px;
+          padding: 10px 12px;
           flex-direction: row;
           align-items: center;
         }
@@ -1539,18 +1593,32 @@
         }
 
         .app-layout.nav-collapsed {
-          grid-template-columns: 78px minmax(0, 1fr);
+          grid-template-columns: minmax(0, 1fr);
           gap: 10px;
         }
 
         .app-layout.nav-collapsed .side-menu {
-          width: 78px;
-          padding: 9px 7px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          width: 100%;
+          padding: 8px;
+          overflow-x: auto;
         }
 
         .app-layout.nav-collapsed .menu-btn {
-          width: 52px;
-          min-height: 40px;
+          display: inline-grid;
+          flex: 0 0 42px;
+          width: 42px;
+          height: 42px;
+          min-height: 42px;
+          place-items: center;
+          margin: 0;
+          padding: 0;
+        }
+
+        .app-layout.nav-collapsed .menu-btn i {
+          margin: 0;
         }
 
         .dashboard-summary-grid {
@@ -1577,23 +1645,40 @@
         }
 
         .dashboard-main-column > .dashboard-toolbar {
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr);
           gap: 8px;
           padding: 12px;
         }
 
         .dashboard-main-column > .dashboard-toolbar.has-project-filter {
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
 
         .dashboard-main-column > .dashboard-toolbar .field-label {
-          align-self: end;
+          align-self: start;
           font-size: 0.74rem;
+        }
+
+        .dashboard-main-column > .dashboard-toolbar .field-label:not(:first-child) {
+          margin-top: 4px;
         }
 
         .dashboard-filter-apply,
         .dashboard-filter-reset {
           width: 100%;
+        }
+
+        .dashboard-ranking-column {
+          position: static;
+          min-width: 0;
+        }
+
+        .ranking-champion-head {
+          flex-wrap: wrap;
+        }
+
+        .ranking-champion-value {
+          font-size: 1rem;
         }
       }
     </style>
