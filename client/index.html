@@ -1621,6 +1621,7 @@
 
         .app-layout.nav-collapsed .menu-btn i {
           margin: 0;
+          font-size: 1rem;
         }
 
         .dashboard-summary-grid {
@@ -1829,6 +1830,7 @@
       let appLines = [];
       let pendingGammes = [];
       let editingManagedLine = '';
+      let entryBeingEdited = null;
       let entryReferenceRowCount = 0;
       let dashboardChart = null;
       let dashboardSelectedDate = '';
@@ -2167,6 +2169,66 @@
         }
       }
 
+      function startEntryEdit(entryId) {
+        if (currentUser?.role === 'superadmin') return;
+        const entry = appEntries.find((item) => item.id === entryId);
+        if (!entry || (entry.user_id || entry.userId) !== currentUser.id) return;
+
+        const details = Array.isArray(entry.reference_items) && entry.reference_items.length
+          ? entry.reference_items
+          : String(entry.reference || '').split(',').map((reference) => ({ reference: reference.trim(), quantity: entry.quantity || 0 }));
+        entryBeingEdited = entryId;
+        navigateTo('add-data');
+
+        const lineEl = document.getElementById('entryLine');
+        const effectifEl = document.getElementById('entryEffectif');
+        const rfcEl = document.getElementById('entryRfc');
+        const dateEl = document.getElementById('entryDate');
+        const submitButton = document.getElementById('saveEfficiencyEntryButton');
+        const cancelButton = document.getElementById('cancelEntryEditButton');
+        const statusEl = document.getElementById('entryStatus');
+        if (lineEl) lineEl.value = entry.line || '';
+        if (effectifEl) effectifEl.value = entry.effectif || '';
+        if (rfcEl) rfcEl.value = entry.rfc ?? '';
+        if (dateEl) dateEl.value = getEntryDate(entry);
+
+        const rowsEl = document.getElementById('entryReferenceRows');
+        if (rowsEl) {
+          rowsEl.innerHTML = '';
+          details.forEach((item) => addReferenceItemRow(item.reference, item.quantity));
+        }
+        if (submitButton) submitButton.innerHTML = '<i class="bi bi-check2-circle"></i>Enregistrer les modifications';
+        if (cancelButton) cancelButton.classList.remove('hidden');
+        if (statusEl) statusEl.textContent = `Modification de la saisie du ${formatDateLabel(getEntryDate(entry))}.`;
+        updateEfficiencyPreview();
+      }
+
+      function cancelEntryEdit() {
+        entryBeingEdited = null;
+        renderAddData();
+      }
+
+      async function deleteEfficiencyEntry(entryId) {
+        if (currentUser?.role === 'superadmin') return;
+        const entry = appEntries.find((item) => item.id === entryId);
+        if (!entry || (entry.user_id || entry.userId) !== currentUser.id) return;
+        if (!window.confirm(`Supprimer définitivement la saisie du ${formatDateLabel(getEntryDate(entry))} pour ${entry.line || 'cette ligne'} ?`)) return;
+
+        try {
+          if (useFirebase) {
+            await db.collection('entries').doc(entryId).delete();
+          } else {
+            demoState.entries = demoState.entries.filter((item) => item.id !== entryId);
+            saveState();
+          }
+          await refreshDataAndRender();
+          navigateTo('suivi');
+        } catch (error) {
+          const wrapEl = document.getElementById('suiviTableWrap');
+          if (wrapEl) wrapEl.insertAdjacentHTML('afterbegin', `<p class="error" role="alert">Impossible de supprimer la saisie : ${String(error.message || error)}</p>`);
+        }
+      }
+
       function getDashboardOwnerId() {
         if (currentUser.role !== 'superadmin') return currentUser.id;
         return dashboardSelectedUserId || 'all';
@@ -2459,14 +2521,18 @@
           return;
         }
 
-        let table = '<div class="table-wrap"><table class="simple-table"><thead><tr><th>Date</th><th>Ligne</th><th>Référence</th><th>Effectif</th><th>Quantité</th><th>Temps gamme</th><th>RFC</th><th>Efficience</th><th>Écart</th></tr></thead><tbody>';
+        const canManageEntries = currentUser.role !== 'superadmin';
+        let table = `<div class="table-wrap"><table class="simple-table"><thead><tr><th>Date</th><th>Ligne</th><th>Référence</th><th>Effectif</th><th>Quantité</th><th>Temps gamme</th><th>RFC</th><th>Efficience</th><th>Écart</th>${canManageEntries ? '<th>Actions</th>' : ''}</tr></thead><tbody>`;
         filtered.forEach((item) => {
           const rfcVal = Number(item.rfc || 0);
           const effVal = Number(item.efficiency || 0);
           const ecartVal = Number.isFinite(Number(item.ecart)) ? Number(item.ecart) : calculateEcart(effVal, rfcVal);
           const ecartClass = ecartVal >= 0 ? 'status-chip status-good' : 'status-chip status-bad';
           const ecartLabel = `${ecartVal >= 0 ? '+' : ''}${ecartVal.toFixed(2)}%`;
-          table += `<tr><td>${formatDateLabel(getEntryDate(item))}</td><td>${item.line || '-'}</td><td>${item.reference || '-'}</td><td>${item.effectif || '-'}</td><td>${item.quantity || '-'}</td><td>${item.gamme_time || '-'} h</td><td>${rfcVal.toFixed(2)}%</td><td>${effVal.toFixed(2)}%</td><td><span class="${ecartClass}">${ecartLabel}</span></td></tr>`;
+          const actions = canManageEntries
+            ? `<td><button type="button" onclick="startEntryEdit('${item.id}')" aria-label="Modifier la saisie"><i class="bi bi-pencil"></i> Modifier</button> <button class="action-danger" type="button" onclick="deleteEfficiencyEntry('${item.id}')" aria-label="Supprimer la saisie"><i class="bi bi-trash"></i> Supprimer</button></td>`
+            : '';
+          table += `<tr><td>${formatDateLabel(getEntryDate(item))}</td><td>${item.line || '-'}</td><td>${item.reference || '-'}</td><td>${item.effectif || '-'}</td><td>${item.quantity || '-'}</td><td>${item.gamme_time || '-'} h</td><td>${rfcVal.toFixed(2)}%</td><td>${effVal.toFixed(2)}%</td><td><span class="${ecartClass}">${ecartLabel}</span></td>${actions}</tr>`;
         });
         table += '</tbody></table></div>';
         wrapEl.innerHTML = table;
@@ -2948,7 +3014,7 @@
               <div class="ranking-champion-foot">
                 <span class="ranking-target-label">Objectif RFC : ${targetLabel} %</span>
                 <span class="ranking-gap-pill ${championGapClass}">${formatGap(champion.gap)} pts vs RFC</span>
-                <span class="ranking-gap-pill comparison-yesterday ${championYesterdayClass}">${champion.gapYesterday === null ? '—' : `${formatGap(champion.gapYesterday)} pts`} vs hier</span>
+                <span class="ranking-gap-pill comparison-yesterday ${championYesterdayClass}">${champion.gapYesterday === null ? '—' : `${formatGap(champion.gapYesterday, 1)} pts`} vs hier</span>
               </div>
             </article>
           `;
@@ -3326,6 +3392,7 @@
 
             <div id="efficiencyCompareStatus" class="status-chip status-good"><i class="bi bi-check-circle"></i>RFC inférieur ou égal à l'efficience (Vert)</div>
             <button id="saveEfficiencyEntryButton" type="submit"><i class="bi bi-check2-circle"></i>Enregistrer la saisie</button>
+            <button id="cancelEntryEditButton" class="hidden" type="button" onclick="cancelEntryEdit()"><i class="bi bi-x-circle"></i>Annuler la modification</button>
             <div id="entryStatus" class="entry-help mt-2"></div>
           </form>
         `;
@@ -3435,6 +3502,7 @@
         const entryDate = document.getElementById('entryDate').value || getTodayKey();
         const statusEl = document.getElementById('entryStatus');
         const saveButton = document.getElementById('saveEfficiencyEntryButton');
+        const cancelButton = document.getElementById('cancelEntryEditButton');
         if (saveButton?.disabled) return;
 
         const items = getReferenceItemValues().filter((item) => item.reference);
@@ -3492,14 +3560,30 @@
           created_at: new Date().toISOString()
         };
 
+        const editingEntryId = entryBeingEdited;
+
         if (saveButton) saveButton.disabled = true;
         if (statusEl) statusEl.textContent = 'Enregistrement…';
         try {
           if (!useFirebase) {
-            demoState.entries.push({ id: `e${Date.now()}`, ...payload });
+            if (editingEntryId) {
+              demoState.entries = demoState.entries.map((entry) => entry.id === editingEntryId
+                ? { ...entry, ...payload }
+                : entry);
+            } else {
+              demoState.entries.push({ id: `e${Date.now()}`, ...payload });
+            }
             saveState();
           } else {
-            await db.collection('entries').add(payload);
+            if (editingEntryId) {
+              const existingEntry = appEntries.find((entry) => entry.id === editingEntryId);
+              if (!existingEntry || (existingEntry.user_id || existingEntry.userId) !== currentUser.id) {
+                throw new Error('Cette saisie n’appartient pas au compte connecté.');
+              }
+              await db.collection('entries').doc(editingEntryId).update(payload);
+            } else {
+              await db.collection('entries').add(payload);
+            }
           }
         } catch (error) {
           const message = error.code === 'permission-denied'
@@ -3512,15 +3596,18 @@
 
         try {
           await refreshDataAndRender();
+          entryBeingEdited = null;
           navigateTo('add-data');
           const refreshedStatus = document.getElementById('entryStatus');
-          if (refreshedStatus) refreshedStatus.textContent = `Saisie enregistrée. Efficience: ${efficiency.toFixed(2)} %`;
+          if (refreshedStatus) refreshedStatus.textContent = `${editingEntryId ? 'Saisie modifiée' : 'Saisie enregistrée'}. Efficience: ${efficiency.toFixed(2)} %`;
         } catch (error) {
           const refreshedStatus = document.getElementById('entryStatus');
           if (refreshedStatus) refreshedStatus.textContent = `Saisie enregistrée, mais les données ne se sont pas rechargées. Actualise la page : ${error.message || error}`;
         } finally {
           const refreshedButton = document.getElementById('saveEfficiencyEntryButton');
           if (refreshedButton) refreshedButton.disabled = false;
+          const cancelButton = document.getElementById('cancelEntryEditButton');
+          if (cancelButton && !entryBeingEdited) cancelButton.classList.add('hidden');
         }
       }
 
