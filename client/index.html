@@ -2124,7 +2124,9 @@
           await firebaseUser.reauthenticateWithCredential(credential);
           return true;
         } catch (error) {
-          window.alert('Mot de passe incorrect ou réauthentification impossible. Aucune action effectuée.');
+          console.error('Échec de la réauthentification Firebase :', error);
+          const code = error.code ? ` (${error.code})` : '';
+          window.alert(`Firebase a refusé la vérification${code}. Saisis le mot de passe Firebase actuel de ${firebaseUser.email}. Aucune action effectuée.`);
           return false;
         }
       }
