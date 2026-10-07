@@ -2104,6 +2104,31 @@
         showLogin();
       }
 
+      async function requireSensitiveActionReauthentication() {
+        if (!useFirebase) {
+          window.alert('Cette action protégée nécessite une session Firebase.');
+          return false;
+        }
+
+        const firebaseUser = auth?.currentUser;
+        if (!firebaseUser || !firebaseUser.email || firebaseUser.uid !== currentUser?.id) {
+          window.alert('Session Firebase introuvable. Déconnecte-toi puis reconnecte-toi.');
+          return false;
+        }
+
+        const password = window.prompt(`Confirme le mot de passe du compte ${firebaseUser.email} pour continuer :`);
+        if (password === null) return false;
+
+        try {
+          const credential = firebase.auth.EmailAuthProvider.credential(firebaseUser.email, password);
+          await firebaseUser.reauthenticateWithCredential(credential);
+          return true;
+        } catch (error) {
+          window.alert('Mot de passe incorrect ou réauthentification impossible. Aucune action effectuée.');
+          return false;
+        }
+      }
+
       function applyRoleNavigationVisibility() {
         const dashboardOnly = currentUser?.role === 'superadmin';
         const btnAddData = document.getElementById('btnAddData');
@@ -2147,7 +2172,8 @@
         document.getElementById('btnAdmin').classList.toggle('active', !dashboardOnly && view === 'admin');
       }
 
-      function navigateTo(view) {
+      async function navigateTo(view, skipReauthentication = false) {
+        if (view === 'admin' && !skipReauthentication && !(await requireSensitiveActionReauthentication())) return;
         const dashboardOnly = currentUser?.role === 'superadmin';
         const safeView = dashboardOnly ? 'dashboard' : view;
         document.getElementById('dashboardView').classList.toggle('hidden', safeView !== 'dashboard');
@@ -2277,6 +2303,7 @@
 
       async function clearSessionEntries() {
         if (!currentUser) return;
+        if (!(await requireSensitiveActionReauthentication())) return;
         if (!window.confirm('Supprimer définitivement toutes les saisies de ton compte ? Cette action est irréversible.')) return;
 
         if (!useFirebase) {
@@ -3223,7 +3250,7 @@
 
           editingManagedLine = '';
           await refreshDataAndRender();
-          navigateTo('admin');
+          navigateTo('admin', true);
           const refreshedStatus = document.getElementById('lineManageStatus');
           if (refreshedStatus) refreshedStatus.textContent = previousEditingLine ? `Ligne modifiée : ${value}` : `Ligne ajoutée : ${value}`;
         } catch (error) {
@@ -3289,7 +3316,7 @@
           }
 
           await refreshDataAndRender();
-          navigateTo('admin');
+          navigateTo('admin', true);
           const refreshedStatus = document.getElementById('lineManageStatus');
           if (refreshedStatus) refreshedStatus.textContent = `Ligne supprimée : ${line}`;
         } catch (error) {
