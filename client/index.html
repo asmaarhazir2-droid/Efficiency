@@ -2643,8 +2643,7 @@
                   </div>
                   <div class="efficiency-target-caption">
                     <span>0 %</span>
-                    <span id="summaryEfficiencyRfcLabel">Objectif RFC : 80 %</span>
-                    <span>120 %</span>
+                    <span id="summaryEfficiencyRfcLabel">RFC : 80 %</span>
                   </div>
                 </div>
                 <div class="dashboard-summary-card">
@@ -2850,7 +2849,7 @@
         if (efficiencyMeterFill) efficiencyMeterFill.style.width = `${efficiencyPosition}%`;
         if (efficiencyMeter) efficiencyMeter.setAttribute('aria-valuenow', `${Math.max(0, Math.min(120, globalEfficiency))}`);
         if (efficiencyRfcMarker) efficiencyRfcMarker.style.left = `${rfcPosition}%`;
-        if (efficiencyRfcLabel) efficiencyRfcLabel.textContent = `Objectif RFC : ${globalRfc.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
+        if (efficiencyRfcLabel) efficiencyRfcLabel.textContent = `RFC : ${globalRfc.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
 
         renderNavRanking(filtered);
 
