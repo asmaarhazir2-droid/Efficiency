@@ -2850,6 +2850,33 @@
               }
             });
 
+            const rfcDatasetIndex = chart.data.datasets.findIndex((dataset) => dataset.label === 'RFC global (%)');
+            const rfcMeta = rfcDatasetIndex >= 0 ? chart.getDatasetMeta(rfcDatasetIndex) : null;
+            const rfcPoint = rfcMeta?.data[rfcMeta.data.length - 1];
+            if (rfcPoint && !rfcMeta.hidden) {
+              const rfcValue = Number(chart.data.datasets[rfcDatasetIndex].data.at(-1));
+              const rfcLabel = `RFC ${rfcValue.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
+              chartContext.font = compactLayout
+                ? '700 10px "Plus Jakarta Sans", sans-serif'
+                : '700 11px "Plus Jakarta Sans", sans-serif';
+              chartContext.textAlign = 'center';
+              const labelWidth = chartContext.measureText(rfcLabel).width + 12;
+              const labelHeight = 18;
+              const labelX = Math.max(chart.chartArea.left + 4, chart.chartArea.right - labelWidth - 4);
+              const labelY = rfcPoint.y < chart.chartArea.top + labelHeight + 4
+                ? rfcPoint.y + 4
+                : rfcPoint.y - labelHeight - 4;
+              chartContext.fillStyle = '#ffffff';
+              chartContext.strokeStyle = '#0d6efd';
+              chartContext.lineWidth = 1.5;
+              chartContext.beginPath();
+              chartContext.roundRect(labelX, labelY, labelWidth, labelHeight, 5);
+              chartContext.fill();
+              chartContext.stroke();
+              chartContext.fillStyle = '#0d6efd';
+              chartContext.fillText(rfcLabel, labelX + labelWidth / 2, labelY + labelHeight / 2);
+            }
+
             chartContext.restore();
           }
         };
