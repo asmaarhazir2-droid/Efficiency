@@ -2822,15 +2822,28 @@
               const centerX = barElement.x;
               const centerY = (barElement.y + barElement.base) / 2;
               const details = chartDetails[index];
-              const hasDetails = details && barElement.base - barElement.y >= 40;
-              chartContext.fillText(`${value.toFixed(compactLayout ? 1 : 2)}%`, centerX, hasDetails ? centerY - 10 : centerY);
+              const hasDetails = details && barElement.base - barElement.y >= 48 && barElement.width >= 70;
+              chartContext.fillStyle = '#ffffff';
+              chartContext.fillText(`${value.toFixed(compactLayout ? 1 : 2)}%`, centerX, hasDetails ? centerY - 13 : centerY);
               if (hasDetails) {
                 const formatDetail = (number) => Number(number || 0).toLocaleString('fr-FR');
                 chartContext.font = compactLayout
-                  ? '600 8px "Plus Jakarta Sans", sans-serif'
-                  : '600 10px "Plus Jakarta Sans", sans-serif';
-                chartContext.fillText(`Cadence ${formatDetail(details.cadence)}`, centerX, centerY + 5);
-                chartContext.fillText(`Effectif ${formatDetail(details.effectif)}`, centerX, centerY + 16);
+                  ? '700 9px "Plus Jakarta Sans", sans-serif'
+                  : '700 10px "Plus Jakarta Sans", sans-serif';
+                const detailRows = [
+                  `Cadence ${formatDetail(details.cadence)}`,
+                  `Effectif ${formatDetail(details.effectif)}`
+                ];
+                detailRows.forEach((label, rowIndex) => {
+                  const rowY = centerY + rowIndex * 15 + 2;
+                  const rowWidth = Math.min(barElement.width - 6, chartContext.measureText(label).width + 12);
+                  chartContext.fillStyle = 'rgba(255, 255, 255, 0.94)';
+                  chartContext.beginPath();
+                  chartContext.roundRect(centerX - rowWidth / 2, rowY - 6, rowWidth, 12, 4);
+                  chartContext.fill();
+                  chartContext.fillStyle = '#12324a';
+                  chartContext.fillText(label, centerX, rowY, rowWidth - 8);
+                });
                 chartContext.font = compactLayout
                   ? '800 12px "Plus Jakarta Sans", sans-serif'
                   : '800 20px "Plus Jakarta Sans", sans-serif';
