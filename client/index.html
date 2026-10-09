@@ -1444,7 +1444,7 @@
       }
 
       .dashboard-summary-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
         margin-bottom: 18px;
       }
@@ -1459,8 +1459,23 @@
       }
 
       .dashboard-summary-card-efficiency {
+        grid-column: 1 / -1;
+        min-height: 158px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 22px 24px;
         border: 2px solid #15803d;
-        background: linear-gradient(145deg, #ffffff, #f3fbf5);
+        background: linear-gradient(110deg, #ffffff 0%, #f3fbf5 70%, #e7f7ec 100%);
+      }
+
+      .dashboard-summary-card-efficiency .dashboard-summary-label {
+        margin-bottom: 8px;
+        font-size: 1rem;
+      }
+
+      .dashboard-summary-card-efficiency .dashboard-summary-value {
+        font-size: 2.5rem;
       }
 
       .dashboard-summary-label {
@@ -2504,6 +2519,11 @@
           <div class="dashboard-layout">
             <div class="dashboard-main-column">
               <div class="dashboard-summary-grid">
+                <div class="dashboard-summary-card dashboard-summary-card-efficiency">
+                  <p class="dashboard-summary-label"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Efficience globale</p>
+                  <p id="summaryEfficiency" class="dashboard-summary-value">0%</p>
+                  <span id="summaryEfficiencyDelta" class="dashboard-summary-delta positive">0,00 pts vs RFC</span>
+                </div>
                 <div class="dashboard-summary-card">
                   <p class="dashboard-summary-label"><i class="bi bi-people-fill" aria-hidden="true"></i>Effectif total</p>
                   <p id="summaryEffectif" class="dashboard-summary-value">0</p>
@@ -2518,11 +2538,6 @@
                   <p class="dashboard-summary-label"><i class="bi bi-speedometer2" aria-hidden="true"></i>Cadence totale</p>
                   <p id="summaryCadence" class="dashboard-summary-value">0</p>
                   <span id="summaryCadenceDelta" class="dashboard-summary-delta">0 vs hier</span>
-                </div>
-                <div class="dashboard-summary-card dashboard-summary-card-efficiency">
-                  <p class="dashboard-summary-label"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Efficience globale</p>
-                  <p id="summaryEfficiency" class="dashboard-summary-value">0%</p>
-                  <span id="summaryEfficiencyDelta" class="dashboard-summary-delta positive">0,00 pts vs RFC</span>
                 </div>
               </div>
               ${projectFilterHtml}
