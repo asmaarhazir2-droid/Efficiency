@@ -2494,6 +2494,9 @@
             </select>
           `
           : '';
+        const projectFilterHtml = currentUser.role === 'superadmin'
+          ? `<div class="dashboard-toolbar has-project-filter">${accountSelectHtml}</div>`
+          : '';
 
         let html = '<hr class="panel-rule">';
 
@@ -2522,15 +2525,7 @@
                   <span id="summaryEfficiencyDelta" class="dashboard-summary-delta positive">0,00 pts vs RFC</span>
                 </div>
               </div>
-              <div class="dashboard-toolbar ${currentUser.role === 'superadmin' ? 'has-project-filter' : ''}">
-                <label class="field-label mb-0">Date:</label>
-                <input id="dashboardDateFilter" class="entry-input" type="date" value="${defaultDate}" min="${dateBounds.min}" max="${dateBounds.max}" onchange="applyDashboardFilters()">
-                ${accountSelectHtml}
-                <label class="field-label mb-0">RFC global (%):</label>
-                <input id="dashboardRfcFilter" class="entry-input" type="number" min="0" step="0.01" value="${defaultRfc.toFixed(2)}">
-                <button class="dashboard-filter-apply" type="button" onclick="applyDashboardFilters()">Appliquer</button>
-                <button class="dashboard-filter-reset" type="button" onclick="resetDashboardFilters()">Réinitialiser</button>
-              </div>
+              ${projectFilterHtml}
               <p id="dashboardLoadError" class="error" role="alert"></p>
               <div class="chart-box">
                 <canvas id="dashboardEfficiencyChart" class="chart-canvas"></canvas>
@@ -2640,7 +2635,7 @@
       }
 
       function onDashboardDateChange() {
-        const selectEl = document.getElementById('dashboardDateFilter');
+        const selectEl = document.getElementById('rankingDateFilter');
         if (!selectEl) return;
 
         const selectedDate = dashboardSelectedDate || selectEl.value;
@@ -2665,7 +2660,7 @@
         if (summaryCadence) summaryCadence.textContent = `${cadenceTotal}`;
         if (summaryEfficiency) summaryEfficiency.textContent = `${globalEfficiency.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 
-        const rfcInput = document.getElementById('dashboardRfcFilter');
+        const rfcInput = document.getElementById('rankingRfcFilter');
         const globalRfc = Number.isFinite(Number(rfcInput?.value))
           ? Number(rfcInput.value)
           : (filtered.length ? filtered.reduce((sum, item) => sum + Number(item.rfc || 0), 0) / filtered.length : 0);
@@ -3059,7 +3054,7 @@
         const sourceEntries = filteredEntries.filter((item) => currentUser.role === 'superadmin'
           ? configuredUserIds.has(item.user_id || item.userId)
           : item.user_id === currentUser.id || item.userId === currentUser.id);
-        const rfcInput = document.getElementById('dashboardRfcFilter');
+        const rfcInput = document.getElementById('rankingRfcFilter');
         const targetRfc = Number.isFinite(Number(rfcInput?.value)) ? Number(rfcInput.value) : 80;
         const aggregate = new Map();
         const rankingByProject = currentUser.role === 'superadmin' && getDashboardOwnerId() === 'all';
@@ -3307,15 +3302,15 @@
       }
 
       function onDashboardRfcChange() {
-        const rfcEl = document.getElementById('dashboardRfcFilter');
+        const rfcEl = document.getElementById('rankingRfcFilter');
         dashboardGlobalRfc = rfcEl ? rfcEl.value : 80;
         onDashboardDateChange();
       }
 
       function applyDashboardFilters() {
-        const dateEl = document.getElementById('dashboardDateFilter');
+        const dateEl = document.getElementById('rankingDateFilter');
         const projectEl = document.getElementById('dashboardUserFilter');
-        const rfcEl = document.getElementById('dashboardRfcFilter');
+        const rfcEl = document.getElementById('rankingRfcFilter');
         dashboardSelectedDate = dateEl?.value || getTodayKey();
         if (currentUser.role === 'superadmin') {
           dashboardSelectedUserId = projectEl?.value || 'all';
@@ -3325,12 +3320,6 @@
       }
 
       function applyRankingQuickFilters() {
-        const rankingDateEl = document.getElementById('rankingDateFilter');
-        const rankingRfcEl = document.getElementById('rankingRfcFilter');
-        const dateEl = document.getElementById('dashboardDateFilter');
-        const rfcEl = document.getElementById('dashboardRfcFilter');
-        if (dateEl) dateEl.value = rankingDateEl?.value || getTodayKey();
-        if (rfcEl) rfcEl.value = rankingRfcEl?.value ?? '80';
         applyDashboardFilters();
       }
 
@@ -3359,7 +3348,7 @@
         const ecartBtn = document.getElementById('rankingModeEcart');
         if (efficiencyBtn) efficiencyBtn.classList.toggle('active', dashboardRankingMode === 'efficiency');
         if (ecartBtn) ecartBtn.classList.toggle('active', dashboardRankingMode === 'ecart');
-        const selectedDate = dashboardSelectedDate || document.getElementById('dashboardDateFilter')?.value || getTodayKey();
+        const selectedDate = dashboardSelectedDate || document.getElementById('rankingDateFilter')?.value || getTodayKey();
         dashboardSelectedDate = selectedDate;
         const entriesForDate = getDashboardEntries().filter((item) => getEntryDate(item) === selectedDate);
         renderNavRanking(entriesForDate);
