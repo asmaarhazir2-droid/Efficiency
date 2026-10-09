@@ -1460,6 +1460,8 @@
 
       .dashboard-summary-card-efficiency {
         grid-column: 1 / -1;
+        justify-self: center;
+        width: min(100%, 560px);
         min-height: 174px;
         display: flex;
         flex-direction: column;
@@ -1468,14 +1470,9 @@
         padding: 22px 26px;
         border: 0;
         border-radius: 12px;
-        background: linear-gradient(110deg, #126b40 0%, #16834c 62%, #27a565 100%);
+        background: linear-gradient(110deg, #0d3260 0%, #075985 62%, #0284c7 100%);
         box-shadow: none;
         color: #ffffff;
-        transition: background 180ms ease;
-      }
-
-      .dashboard-summary-card-efficiency.below-target {
-        background: linear-gradient(110deg, #a62b39 0%, #c43b4b 62%, #dc5963 100%);
       }
 
       .efficiency-summary-top {
@@ -2622,7 +2619,7 @@
           <div class="dashboard-layout">
             <div class="dashboard-main-column">
               <div class="dashboard-summary-grid">
-                <div id="summaryEfficiencyPanel" class="dashboard-summary-card dashboard-summary-card-efficiency">
+                <div class="dashboard-summary-card dashboard-summary-card-efficiency">
                   <div class="efficiency-summary-top">
                     <div class="efficiency-summary-primary">
                       <p class="dashboard-summary-label"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Efficience globale</p>
@@ -2835,7 +2832,6 @@
         setDelta('summaryHoursDelta', `${formatSigned(hoursDelta, 2)} h vs hier`, hoursDelta);
         setDelta('summaryCadenceDelta', `${formatSigned(cadenceDelta)} vs hier`, cadenceDelta);
         setDelta('summaryEfficiencyDelta', `${formatSigned(efficiencyDelta, 2)} pts vs RFC · ${formatSigned(efficiencyVsYesterday, 2)} pts vs hier`, efficiencyDelta);
-        const efficiencyPanel = document.getElementById('summaryEfficiencyPanel');
         const efficiencyStatus = document.getElementById('summaryEfficiencyStatus');
         const efficiencyMeter = document.getElementById('summaryEfficiencyMeter');
         const efficiencyMeterFill = document.getElementById('summaryEfficiencyMeterFill');
@@ -2843,7 +2839,6 @@
         const efficiencyRfcLabel = document.getElementById('summaryEfficiencyRfcLabel');
         const efficiencyPosition = Math.max(0, Math.min(100, (globalEfficiency / 120) * 100));
         const rfcPosition = Math.max(0, Math.min(100, (globalRfc / 120) * 100));
-        if (efficiencyPanel) efficiencyPanel.classList.toggle('below-target', efficiencyDelta < 0);
         if (efficiencyStatus) efficiencyStatus.textContent = efficiencyDelta < 0 ? 'Sous l’objectif' : 'Objectif atteint';
         if (efficiencyMeterFill) efficiencyMeterFill.style.width = `${efficiencyPosition}%`;
         if (efficiencyMeter) efficiencyMeter.setAttribute('aria-valuenow', `${Math.max(0, Math.min(120, globalEfficiency))}`);
