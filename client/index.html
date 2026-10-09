@@ -1460,22 +1460,125 @@
 
       .dashboard-summary-card-efficiency {
         grid-column: 1 / -1;
-        min-height: 158px;
+        min-height: 174px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        padding: 22px 24px;
-        border: 2px solid #15803d;
-        background: linear-gradient(110deg, #ffffff 0%, #f3fbf5 70%, #e7f7ec 100%);
+        gap: 16px;
+        padding: 22px 26px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(110deg, #126b40 0%, #16834c 62%, #27a565 100%);
+        box-shadow: none;
+        color: #ffffff;
+        transition: background 180ms ease;
       }
 
-      .dashboard-summary-card-efficiency .dashboard-summary-label {
+      .dashboard-summary-card-efficiency.below-target {
+        background: linear-gradient(110deg, #a62b39 0%, #c43b4b 62%, #dc5963 100%);
+      }
+
+      .efficiency-summary-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .efficiency-summary-primary .dashboard-summary-label {
         margin-bottom: 8px;
-        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 0.95rem;
       }
 
-      .dashboard-summary-card-efficiency .dashboard-summary-value {
-        font-size: 2.5rem;
+      .efficiency-summary-primary .dashboard-summary-label i {
+        color: #ffffff;
+      }
+
+      .efficiency-summary-primary .dashboard-summary-value {
+        color: #ffffff;
+        font-size: 2.8rem;
+      }
+
+      .efficiency-summary-comparison {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 7px;
+      }
+
+      .efficiency-summary-status {
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 750;
+      }
+
+      .dashboard-summary-card-efficiency .dashboard-summary-delta {
+        margin-top: 0;
+        padding: 5px 10px;
+        background: rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+        font-size: 0.78rem;
+        white-space: normal;
+      }
+
+      .efficiency-target-meter {
+        position: relative;
+        height: 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.28);
+      }
+
+      .efficiency-target-fill {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: #ffffff;
+        transition: width 220ms ease;
+      }
+
+      .efficiency-target-marker {
+        position: absolute;
+        top: -4px;
+        bottom: -4px;
+        left: 66.67%;
+        width: 2px;
+        border-radius: 2px;
+        background: #102d4d;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+        transform: translateX(-50%);
+      }
+
+      .efficiency-target-caption {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: -10px;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.68rem;
+        font-weight: 650;
+      }
+
+      @media (max-width: 520px) {
+        .dashboard-summary-card-efficiency {
+          min-height: 0;
+          padding: 18px;
+        }
+
+        .efficiency-summary-top {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .efficiency-summary-comparison {
+          align-items: flex-start;
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
       }
 
       .dashboard-summary-label {
@@ -2519,10 +2622,26 @@
           <div class="dashboard-layout">
             <div class="dashboard-main-column">
               <div class="dashboard-summary-grid">
-                <div class="dashboard-summary-card dashboard-summary-card-efficiency">
-                  <p class="dashboard-summary-label"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Efficience globale</p>
-                  <p id="summaryEfficiency" class="dashboard-summary-value">0%</p>
-                  <span id="summaryEfficiencyDelta" class="dashboard-summary-delta positive">0,00 pts vs RFC</span>
+                <div id="summaryEfficiencyPanel" class="dashboard-summary-card dashboard-summary-card-efficiency">
+                  <div class="efficiency-summary-top">
+                    <div class="efficiency-summary-primary">
+                      <p class="dashboard-summary-label"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Efficience globale</p>
+                      <p id="summaryEfficiency" class="dashboard-summary-value">0%</p>
+                    </div>
+                    <div class="efficiency-summary-comparison">
+                      <span id="summaryEfficiencyStatus" class="efficiency-summary-status">Objectif atteint</span>
+                      <span id="summaryEfficiencyDelta" class="dashboard-summary-delta">0,00 pts vs RFC</span>
+                    </div>
+                  </div>
+                  <div id="summaryEfficiencyMeter" class="efficiency-target-meter" role="meter" aria-label="Efficience globale" aria-valuemin="0" aria-valuemax="120" aria-valuenow="0">
+                    <div id="summaryEfficiencyMeterFill" class="efficiency-target-fill"></div>
+                    <span id="summaryEfficiencyRfcMarker" class="efficiency-target-marker" aria-hidden="true"></span>
+                  </div>
+                  <div class="efficiency-target-caption">
+                    <span>0 %</span>
+                    <span id="summaryEfficiencyRfcLabel">Objectif RFC : 80 %</span>
+                    <span>120 %</span>
+                  </div>
                 </div>
                 <div class="dashboard-summary-card">
                   <p class="dashboard-summary-label"><i class="bi bi-people-fill" aria-hidden="true"></i>Effectif total</p>
@@ -2716,6 +2835,20 @@
         setDelta('summaryHoursDelta', `${formatSigned(hoursDelta, 2)} h vs hier`, hoursDelta);
         setDelta('summaryCadenceDelta', `${formatSigned(cadenceDelta)} vs hier`, cadenceDelta);
         setDelta('summaryEfficiencyDelta', `${formatSigned(efficiencyDelta, 2)} pts vs RFC · ${formatSigned(efficiencyVsYesterday, 2)} pts vs hier`, efficiencyDelta);
+        const efficiencyPanel = document.getElementById('summaryEfficiencyPanel');
+        const efficiencyStatus = document.getElementById('summaryEfficiencyStatus');
+        const efficiencyMeter = document.getElementById('summaryEfficiencyMeter');
+        const efficiencyMeterFill = document.getElementById('summaryEfficiencyMeterFill');
+        const efficiencyRfcMarker = document.getElementById('summaryEfficiencyRfcMarker');
+        const efficiencyRfcLabel = document.getElementById('summaryEfficiencyRfcLabel');
+        const efficiencyPosition = Math.max(0, Math.min(100, (globalEfficiency / 120) * 100));
+        const rfcPosition = Math.max(0, Math.min(100, (globalRfc / 120) * 100));
+        if (efficiencyPanel) efficiencyPanel.classList.toggle('below-target', efficiencyDelta < 0);
+        if (efficiencyStatus) efficiencyStatus.textContent = efficiencyDelta < 0 ? 'Sous l’objectif' : 'Objectif atteint';
+        if (efficiencyMeterFill) efficiencyMeterFill.style.width = `${efficiencyPosition}%`;
+        if (efficiencyMeter) efficiencyMeter.setAttribute('aria-valuenow', `${Math.max(0, Math.min(120, globalEfficiency))}`);
+        if (efficiencyRfcMarker) efficiencyRfcMarker.style.left = `${rfcPosition}%`;
+        if (efficiencyRfcLabel) efficiencyRfcLabel.textContent = `Objectif RFC : ${globalRfc.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
 
         renderNavRanking(filtered);
 
