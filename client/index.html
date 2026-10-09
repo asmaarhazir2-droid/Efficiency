@@ -2862,7 +2862,7 @@
               chartContext.textAlign = 'center';
               const labelWidth = chartContext.measureText(rfcLabel).width + 12;
               const labelHeight = 18;
-              const labelX = Math.max(chart.chartArea.left + 4, chart.chartArea.right - labelWidth - 4);
+              const labelX = chart.chartArea.left + 4;
               const labelY = rfcPoint.y < chart.chartArea.top + labelHeight + 4
                 ? rfcPoint.y + 4
                 : rfcPoint.y - labelHeight - 4;
