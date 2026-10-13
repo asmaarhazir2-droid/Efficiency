@@ -3137,47 +3137,53 @@
 
             const { ctx: chartContext } = chart;
             const compactLayout = chart.width < 600;
+            const drawBarLabel = (label, centerX, centerY, barWidth, fontSize, weight) => {
+              chartContext.font = `${weight} ${fontSize}px "Plus Jakarta Sans", sans-serif`;
+              const labelWidth = Math.min(barWidth - 8, chartContext.measureText(label).width + 18);
+              const labelHeight = fontSize + 8;
+              chartContext.fillStyle = '#ffd54f';
+              chartContext.strokeStyle = '#002857';
+              chartContext.lineWidth = 1.5;
+              chartContext.beginPath();
+              chartContext.roundRect(centerX - labelWidth / 2, centerY - labelHeight / 2, labelWidth, labelHeight, 5);
+              chartContext.fill();
+              chartContext.stroke();
+              chartContext.fillStyle = '#002857';
+              chartContext.textAlign = 'center';
+              chartContext.textBaseline = 'middle';
+              chartContext.fillText(label, centerX, centerY, labelWidth - 12);
+            };
             chartContext.save();
-            chartContext.fillStyle = '#ffffff';
             chartContext.textAlign = 'center';
             chartContext.textBaseline = 'middle';
-            chartContext.font = compactLayout
-              ? '800 12px "Plus Jakarta Sans", sans-serif'
-              : '800 20px "Plus Jakarta Sans", sans-serif';
 
             meta.data.forEach((barElement, index) => {
               const value = Number(barDataset.data[index] || 0);
               if (!Number.isFinite(value) || value <= 0) return;
-              if (compactLayout && barElement.width < 30) return;
+              if (barElement.width < 30) return;
 
               const centerX = barElement.x;
               const centerY = (barElement.y + barElement.base) / 2;
               const details = chartDetails[index];
-              const hasDetails = details && barElement.base - barElement.y >= 48 && barElement.width >= 70;
-              chartContext.fillStyle = '#ffffff';
-              chartContext.fillText(`${value.toFixed(compactLayout ? 1 : 2)}%`, centerX, hasDetails ? centerY - 13 : centerY);
+              const hasDetails = details && barElement.base - barElement.y >= 60 && barElement.width >= 70;
+              drawBarLabel(
+                `${value.toFixed(compactLayout ? 1 : 2)}%`,
+                centerX,
+                hasDetails ? centerY - 20 : centerY,
+                barElement.width,
+                compactLayout ? 14 : 22,
+                800
+              );
               if (hasDetails) {
                 const formatDetail = (number) => Number(number || 0).toLocaleString('fr-FR');
-                chartContext.font = compactLayout
-                  ? '700 10px "Plus Jakarta Sans", sans-serif'
-                  : '700 12px "Plus Jakarta Sans", sans-serif';
                 const detailRows = [
                   `Cadence ${formatDetail(details.cadence)}`,
                   `Effectif ${formatDetail(details.effectif)}`
                 ];
                 detailRows.forEach((label, rowIndex) => {
-                  const rowY = centerY + rowIndex * 17 + 2;
-                  const rowWidth = Math.min(barElement.width - 6, chartContext.measureText(label).width + 12);
-                  chartContext.fillStyle = 'rgba(255, 255, 255, 0.94)';
-                  chartContext.beginPath();
-                  chartContext.roundRect(centerX - rowWidth / 2, rowY - 7, rowWidth, 14, 4);
-                  chartContext.fill();
-                  chartContext.fillStyle = '#12324a';
-                  chartContext.fillText(label, centerX, rowY, rowWidth - 8);
+                  const rowY = centerY + rowIndex * 21 + 3;
+                  drawBarLabel(label, centerX, rowY, barElement.width, compactLayout ? 11 : 15, 750);
                 });
-                chartContext.font = compactLayout
-                  ? '800 12px "Plus Jakarta Sans", sans-serif'
-                  : '800 20px "Plus Jakarta Sans", sans-serif';
               }
             });
 
