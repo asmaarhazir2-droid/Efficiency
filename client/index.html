@@ -3137,25 +3137,20 @@
 
             const { ctx: chartContext } = chart;
             const compactLayout = chart.width < 600;
-            const drawBarLabel = (label, centerX, centerY, barWidth, fontSize, weight) => {
+            const drawBarText = (label, centerX, centerY, barWidth, fontSize, weight) => {
               chartContext.font = `${weight} ${fontSize}px "Plus Jakarta Sans", sans-serif`;
-              const labelWidth = Math.min(barWidth - 8, chartContext.measureText(label).width + 18);
-              const labelHeight = fontSize + 8;
               chartContext.fillStyle = '#ffffff';
-              chartContext.strokeStyle = '#002857';
-              chartContext.lineWidth = 1.5;
-              chartContext.beginPath();
-              chartContext.roundRect(centerX - labelWidth / 2, centerY - labelHeight / 2, labelWidth, labelHeight, 5);
-              chartContext.fill();
-              chartContext.stroke();
-              chartContext.fillStyle = '#002857';
               chartContext.textAlign = 'center';
               chartContext.textBaseline = 'middle';
-              chartContext.fillText(label, centerX, centerY, labelWidth - 12);
+              chartContext.fillText(label, centerX, centerY, barWidth - 12);
             };
             chartContext.save();
             chartContext.textAlign = 'center';
             chartContext.textBaseline = 'middle';
+            const valueFontSize = compactLayout ? 14 : 22;
+            const detailFontSize = compactLayout ? 11 : 15;
+            const rowGap = compactLayout ? 7 : 9;
+            const labelStackHeight = valueFontSize + detailFontSize * 2 + rowGap * 2;
 
             meta.data.forEach((barElement, index) => {
               const value = Number(barDataset.data[index] || 0);
@@ -3165,25 +3160,30 @@
               const centerX = barElement.x;
               const centerY = (barElement.y + barElement.base) / 2;
               const details = chartDetails[index];
-              const hasDetails = details && barElement.base - barElement.y >= 60 && barElement.width >= 70;
-              drawBarLabel(
-                `${value.toFixed(compactLayout ? 1 : 2)}%`,
-                centerX,
-                hasDetails ? centerY - 20 : centerY,
-                barElement.width,
-                compactLayout ? 14 : 22,
-                800
-              );
+              const hasDetails = details && barElement.base - barElement.y >= labelStackHeight + 8 && barElement.width >= 70;
               if (hasDetails) {
                 const formatDetail = (number) => Number(number || 0).toLocaleString('fr-FR');
                 const detailRows = [
                   `Cadence ${formatDetail(details.cadence)}`,
                   `Effectif ${formatDetail(details.effectif)}`
                 ];
-                detailRows.forEach((label, rowIndex) => {
-                  const rowY = centerY + rowIndex * 21 + 3;
-                  drawBarLabel(label, centerX, rowY, barElement.width, compactLayout ? 11 : 15, 750);
+                let rowY = centerY - labelStackHeight / 2;
+                const valueLabel = `${value.toFixed(compactLayout ? 1 : 2)}%`;
+                drawBarText(valueLabel, centerX, rowY + valueFontSize / 2, barElement.width, valueFontSize, 800);
+                rowY += valueFontSize + rowGap;
+                detailRows.forEach((label) => {
+                  drawBarText(label, centerX, rowY + detailFontSize / 2, barElement.width, detailFontSize, 750);
+                  rowY += detailFontSize + rowGap;
                 });
+              } else {
+                drawBarText(
+                  `${value.toFixed(compactLayout ? 1 : 2)}%`,
+                  centerX,
+                  centerY,
+                  barElement.width,
+                  valueFontSize,
+                  800
+                );
               }
             });
 
