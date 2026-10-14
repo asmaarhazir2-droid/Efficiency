@@ -2233,7 +2233,17 @@
       }
 
       function getTodayKey() {
-        return new Date().toISOString().slice(0, 10);
+        return getDateKey(new Date());
+      }
+
+      function getYesterdayKey() {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return getDateKey(yesterday);
+      }
+
+      function getDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       }
 
       function getEntryDate(item) {
@@ -2257,6 +2267,7 @@
           dates.push(...craProjectHours.map((item) => item.entry_date));
         }
         dates.push(getTodayKey());
+        dates.push(getYesterdayKey());
         return [...new Set(dates)].sort((a, b) => b.localeCompare(a));
       }
 
@@ -2725,8 +2736,7 @@
           headerLabel.textContent = `${projectLabel} Efficiency`;
         }
 
-        const availableDates = getAvailableEntryDates();
-        const defaultDate = dashboardSelectedDate || availableDates[0] || getTodayKey();
+        const defaultDate = dashboardSelectedDate || getYesterdayKey();
         const dateBounds = getDateBounds();
         const defaultRfc = Number.isFinite(Number(dashboardGlobalRfc))
           ? Number(dashboardGlobalRfc)
@@ -3604,13 +3614,13 @@
       }
 
       function resetRankingQuickFilters() {
-        dashboardSelectedDate = getTodayKey();
+        dashboardSelectedDate = getYesterdayKey();
         dashboardGlobalRfc = 80;
         renderDashboard();
       }
 
       function resetDashboardFilters() {
-        dashboardSelectedDate = getTodayKey();
+        dashboardSelectedDate = getYesterdayKey();
         dashboardSelectedUserId = currentUser.role === 'superadmin' ? 'all' : currentUser.id;
         dashboardGlobalRfc = 80;
         renderDashboard();
