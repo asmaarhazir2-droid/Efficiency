@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import SidebarNav from '../components/SidebarNav';
-import { addUserEntry, getUserDropdowns } from '../firebase/services';
+import { addUserEntry, getUserDropdowns, getUserEntriesForYesterday } from '../firebase/services';
 
 const DashboardPage = ({ user }) => {
   const [dropdowns, setDropdowns] = useState([]);
+  const [yesterdayEntries, setYesterdayEntries] = useState([]);
+  const [reportDate, setReportDate] = useState(null);
+  const [entriesLoading, setEntriesLoading] = useState(true);
+  const [entriesError, setEntriesError] = useState('');
   const [selected, setSelected] = useState({});
   const [message, setMessage] = useState('');
 
@@ -12,7 +16,19 @@ const DashboardPage = ({ user }) => {
       const rows = await getUserDropdowns(user.id);
       setDropdowns(rows);
     };
+    const fetchYesterdayEntries = async () => {
+      try {
+        const result = await getUserEntriesForYesterday(user.id);
+        setYesterdayEntries(result.entries);
+        setReportDate(result.reportDate);
+      } catch (err) {
+        setEntriesError('Impossible de charger les résultats de J-1.');
+      } finally {
+        setEntriesLoading(false);
+      }
+    };
     fetchDropdowns();
+    fetchYesterdayEntries();
   }, [user.id]);
 
   const handleChange = (id, value, category) => {
@@ -48,6 +64,24 @@ const DashboardPage = ({ user }) => {
         </header>
 
         <div className="content">
+          <section className="card">
+            <h2>Mes résultats du {reportDate?.toLocaleDateString('fr-FR') || 'J-1'}</h2>
+            {entriesLoading ? (
+              <p>Chargement des résultats...</p>
+            ) : entriesError ? (
+              <p className="error">{entriesError}</p>
+            ) : yesterdayEntries.length === 0 ? (
+              <p>Aucun résultat enregistré pour J-1.</p>
+            ) : (
+              yesterdayEntries.map((entry) => (
+                <div key={entry.id} className="admin-row">
+                  <span>{entry.category}: {entry.selected_value}</span>
+                  <span>{entry.created_at.toDate().toLocaleTimeString('fr-FR')}</span>
+                </div>
+              ))
+            )}
+          </section>
+
           <section id="add-data" className="card">
           <h2>Liste déroulante personnalisée</h2>
           {dropdowns.length === 0 ? (

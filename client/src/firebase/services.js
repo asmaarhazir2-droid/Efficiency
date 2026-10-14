@@ -7,9 +7,18 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   where
 } from 'firebase/firestore';
 import { db } from './config';
+
+function getYesterdayRange() {
+  const end = new Date();
+  end.setHours(0, 0, 0, 0);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 1);
+  return { start, end };
+}
 
 async function getUserEmailById(id) {
   const userDoc = await getDoc(doc(db, 'users', id));
@@ -51,6 +60,23 @@ export async function addUserEntry(entry) {
   });
 }
 
+export async function getUserEntriesForYesterday(userId) {
+  const { start, end } = getYesterdayRange();
+  const snapshot = await getDocs(query(
+    collection(db, 'entries'),
+    where('user_id', '==', userId)
+  ));
+  const entries = snapshot.docs
+    .map((item) => ({ id: item.id, ...item.data() }))
+    .filter((entry) => {
+      const createdAt = entry.created_at?.toDate?.();
+      return createdAt && createdAt >= start && createdAt < end;
+    })
+    .sort((first, second) => second.created_at.toMillis() - first.created_at.toMillis());
+
+  return { entries, reportDate: start };
+}
+
 export async function getAdminDropdowns(user) {
   if (user.role !== 'superadmin') {
     return getUserDropdowns(user.id);
@@ -82,7 +108,12 @@ export async function addDropdownOption(user, form) {
 export async function getStatistics() {
   const usersSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'user')));
   const dropdownSnapshot = await getDocs(collection(db, 'dropdown_options'));
-  const entriesSnapshot = await getDocs(collection(db, 'entries'));
+  const { start, end } = getYesterdayRange();
+  const entriesSnapshot = await getDocs(query(
+    collection(db, 'entries'),
+    where('created_at', '>=', Timestamp.fromDate(start)),
+    where('created_at', '<', Timestamp.fromDate(end))
+  ));
 
   const users = usersSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
   const entriesByUser = new Map();
@@ -102,6 +133,7 @@ export async function getStatistics() {
     totalUsers: users.length,
     totalOptions: dropdownSnapshot.size,
     totalEntries: entriesSnapshot.size,
+    reportDate: start,
     byUser
   };
 }

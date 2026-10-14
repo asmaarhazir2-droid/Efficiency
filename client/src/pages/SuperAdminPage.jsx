@@ -29,13 +29,14 @@ const SuperAdminPage = () => {
             <p>Chargement...</p>
           ) : (
             <>
+              <p>Résultats du {stats.reportDate.toLocaleDateString('fr-FR')}</p>
               <div className="stats-grid">
                 <div className="stat-card">Utilisateurs : {stats.totalUsers}</div>
                 <div className="stat-card">Options : {stats.totalOptions}</div>
-                <div className="stat-card">Entrées : {stats.totalEntries}</div>
+                <div className="stat-card">Entrées (J-1) : {stats.totalEntries}</div>
               </div>
               <div className="chart-card">
-                <h3>Entrées par utilisateur</h3>
+                <h3>Entrées par utilisateur (J-1)</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={stats.byUser}>
                     <XAxis dataKey="email" />

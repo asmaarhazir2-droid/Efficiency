@@ -12,7 +12,7 @@ Application React + Firebase (sans serveur Node requis).
 - Authentification Firebase Auth (email/mot de passe)
 - Roles stockes dans Firestore (`user`, `superadmin`)
 - Chaque utilisateur gere ses propres options de listes deroulantes
-- Super Admin visualise les statistiques globales sans modifier les listes utilisateur
+- Super Admin visualise les statistiques globales et les entrées par utilisateur du jour précédent (J-1), sans modifier les listes utilisateur
 
 ## Configuration Firebase
 
