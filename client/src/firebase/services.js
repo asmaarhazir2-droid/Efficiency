@@ -60,21 +60,33 @@ export async function addUserEntry(entry) {
   });
 }
 
-export async function getUserEntriesForYesterday(userId) {
-  const { start, end } = getYesterdayRange();
+export async function getLatestUserEntries(userId) {
   const snapshot = await getDocs(query(
     collection(db, 'entries'),
     where('user_id', '==', userId)
   ));
   const entries = snapshot.docs
     .map((item) => ({ id: item.id, ...item.data() }))
-    .filter((entry) => {
-      const createdAt = entry.created_at?.toDate?.();
-      return createdAt && createdAt >= start && createdAt < end;
-    })
+    .filter((entry) => entry.created_at?.toDate?.())
     .sort((first, second) => second.created_at.toMillis() - first.created_at.toMillis());
 
-  return { entries, reportDate: start };
+  if (entries.length === 0) {
+    return { entries: [], reportDate: null };
+  }
+
+  const latestDate = entries[0].created_at.toDate();
+  const start = new Date(latestDate);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+
+  return {
+    entries: entries.filter((entry) => {
+      const createdAt = entry.created_at.toDate();
+      return createdAt >= start && createdAt < end;
+    }),
+    reportDate: start
+  };
 }
 
 export async function getAdminDropdowns(user) {

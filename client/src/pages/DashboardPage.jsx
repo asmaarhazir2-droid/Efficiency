@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import SidebarNav from '../components/SidebarNav';
-import { addUserEntry, getUserDropdowns, getUserEntriesForYesterday } from '../firebase/services';
+import { addUserEntry, getLatestUserEntries, getUserDropdowns } from '../firebase/services';
 
 const DashboardPage = ({ user }) => {
   const [dropdowns, setDropdowns] = useState([]);
-  const [yesterdayEntries, setYesterdayEntries] = useState([]);
+  const [recentEntries, setRecentEntries] = useState([]);
   const [reportDate, setReportDate] = useState(null);
   const [entriesLoading, setEntriesLoading] = useState(true);
   const [entriesError, setEntriesError] = useState('');
@@ -16,19 +16,19 @@ const DashboardPage = ({ user }) => {
       const rows = await getUserDropdowns(user.id);
       setDropdowns(rows);
     };
-    const fetchYesterdayEntries = async () => {
+    const fetchRecentEntries = async () => {
       try {
-        const result = await getUserEntriesForYesterday(user.id);
-        setYesterdayEntries(result.entries);
+        const result = await getLatestUserEntries(user.id);
+        setRecentEntries(result.entries);
         setReportDate(result.reportDate);
       } catch (err) {
-        setEntriesError('Impossible de charger les résultats de J-1.');
+        setEntriesError('Impossible de charger les derniers résultats.');
       } finally {
         setEntriesLoading(false);
       }
     };
     fetchDropdowns();
-    fetchYesterdayEntries();
+    fetchRecentEntries();
   }, [user.id]);
 
   const handleChange = (id, value, category) => {
@@ -46,9 +46,19 @@ const DashboardPage = ({ user }) => {
           category
         })
       )));
-      setMessage('Sélection enregistrée.');
     } catch (err) {
       setMessage('Erreur lors de l’enregistrement.');
+      return;
+    }
+
+    setMessage('Sélection enregistrée.');
+    try {
+      const result = await getLatestUserEntries(user.id);
+      setRecentEntries(result.entries);
+      setReportDate(result.reportDate);
+      setEntriesError('');
+    } catch (err) {
+      setMessage('Sélection enregistrée, mais impossible d’actualiser les résultats.');
     }
   };
 
@@ -65,18 +75,18 @@ const DashboardPage = ({ user }) => {
 
         <div className="content">
           <section className="card">
-            <h2>Mes résultats du {reportDate?.toLocaleDateString('fr-FR') || 'J-1'}</h2>
+            <h2>Mes résultats du {reportDate?.toLocaleDateString('fr-FR') || 'dernier jour saisi'}</h2>
             {entriesLoading ? (
               <p>Chargement des résultats...</p>
             ) : entriesError ? (
               <p className="error">{entriesError}</p>
-            ) : yesterdayEntries.length === 0 ? (
-              <p>Aucun résultat enregistré pour J-1.</p>
+            ) : recentEntries.length === 0 ? (
+              <p>Aucun résultat enregistré.</p>
             ) : (
-              yesterdayEntries.map((entry) => (
+              recentEntries.map((entry) => (
                 <div key={entry.id} className="admin-row">
                   <span>{entry.category}: {entry.selected_value}</span>
-                  <span>{entry.created_at.toDate().toLocaleTimeString('fr-FR')}</span>
+                  <span>{entry.created_at?.toDate?.().toLocaleString('fr-FR') || ''}</span>
                 </div>
               ))
             )}
